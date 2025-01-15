@@ -32,10 +32,27 @@ Področje umetne inteligence, ki raziskuje, kako se lahko **algoritmi samodejno 
     + **Klasifikacijski problem:** $y_i$ diskretna spremenljivka
     + **Regresijski problem:** $y_i$ zvezna spremenljivka
 
-**Klasifikacija:**
-+ $y$ je diskreten (končen nabor vrednosti)
-+ $y$ se imenuje razred
+>**Klasifikacija:**
+>+ $y$ je diskreten (končen nabor vrednosti)
+>+ $y$ se imenuje razred
 
-**Regresija:**
-+ $y$ je zvezen (neko število)
-+ $y$ se imenuje označba
+>**Regresija:**
+>+ $y$ je zvezen (neko število)
+>+ $y$ se imenuje označba
+
+* **Hipoteze:**
+    + dobra hipoteza je dovolj **splošna** &rarr; pravilno napoveduje vrednost $y$ za nove primere
+    + princip **Ockhamove britve** za izbor primerne hipoteze &rarr; najbolj preprosta
+* **Prostor hipotez:**
+    + binarna klasifikacija z $n$ atributi &rarr; $2^n$ različnih učnih primerov in $2^{2^n}$ hipotez
+    + potrebni algoritmi za gradnjo dobrih hipotez in metode za ocenjevanje hipotez/učenja
+* **Evalviranje hipotez:**
+    + konsistentnost hipotez z učnimi primeri
+    + splošnost (točnost za nevidene primere)
+    + razumljivost
+
+>Klasifikacijska točnost:
+>$$ CA = \frac{TP + TN}{TP + TN + FP + FN} = \frac{TP + TN}{N} $$
+>&nbsp;
+
+

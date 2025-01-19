@@ -121,3 +121,26 @@ Obravnava **manjkajočih vrednosti atributov** vključuje različne pristope, ko
 
 #### Naivni Bayesov klasifikator
 
+>**Bayesovo pravilo:**
+>$$P(B|A) = \frac{P(A|B) \cdot P(B)}{P(A)}$$
+>
+>**Naivni Bayes:**
+>$$P(C \mid X_1, X_2, \dots, X_n) = \frac{P(C) \cdot P(X_1, X_2, \dots, X_n \mid C)}{P(X_1, X_2, \dots, X_n)} $$
+>$$P(C \mid X_1, X_2, \ldots, X_n) \approx \frac{P(C) \cdot \prod_{i} P(X_i \mid C)}{\prod_{i} P(X_i)}$$
+>(približki veljajo le, le so atributi med sabo dovolj neodvisni)
+>&nbsp;
+>**Bayesov klasifikator:** primer klasificiramo v razred, ki je najbolj verjeten
+>$$h(C_k \mid X_1, X_2, \ldots, X_n) = \arg \max_{C_k} \left( P(C_k) \prod_{i=1}^n P(X_i \mid C_k) \right)$$
+>&nbsp;
+
+#### Nomogrami
+
+Nomogram je pristop za vizualizacijo naivnega Bayesovega modela. Prikazuje pomembnost posameznih vrednosti vsakega atributa na ciljni razred. Vsaka vrednost atributa doprinaša določeno število točk k ciljnemu razredu. 
+
+>**Skupno število točk:**
+>$$\text{tocke}(C \mid X_1, X_2, \ldots, X_n) = \sum_i \log \frac{P(X_i \mid C)}{P(X_i \mid \overline{C})}$$
+>$$\frac{P(C \mid X_i)}{P(\overline{C} \mid X_i)} = \frac{\frac{P(C \mid X_i)}{P(C)}}{\frac{P(\overline{C} \mid X_i)}{P(\overline{C})}}$$
+>(izračun)
+
+#### Metoda $k$ najbližjih sosedov
+

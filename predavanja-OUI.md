@@ -1,4 +1,4 @@
-# Umetina inteligenca, uvod v strojno učenje
+# Umetna inteligenca, uvod v strojno učenje
 
 #### Kaj je umetna inteligenca?
 + **Cilj:** razumeti in zgraditi inteligentne sisteme na osnovi človeškega razmišljanja, sklepanja, učenja, komuniciranja
@@ -55,4 +55,69 @@ Področje umetne inteligence, ki raziskuje, kako se lahko **algoritmi samodejno 
 >$$ CA = \frac{TP + TN}{TP + TN + FP + FN} = \frac{TP + TN}{N} $$
 >&nbsp;
 
+#### Učenje odločitvenih dreves
+
++ **Odločitveno drevo:**
+    + ponazarja relacijo med atributi (vhodne vrednosti) in ciljno spremenljivko (odločitev)
+    + cilj zgraditi čim **manjše** drevo, **konsistentno** z učnimi podatki
+    + **TDIDT:** hevristični požrešni algoritem, razveji in omeji &rarr; izbere najbolj pomemben atribut, rekurzivno ponavlja za poddrevesa
++ Izbor najbolj pomembnega atributa:
+>    + **entropija:** $$H = -\sum_k p_k \log_2 p_k$$
+>    + **informacijski prispevek:** $$IG(A) = I - I_{res}(A)$$
+>$$ I_{\text{res}} = -\sum_{v_i \in A} p_{v_i} \sum_c p(c \mid v_i) \log_2 p(c \mid v_i)$$
+>    + **information gain ratio:** $$GR(A) = \frac{IG(A)}{I(A)}$$
+>    + **gini index:** $$\text{Gini}(A) = \sum_v p(v) \sum_{c_1 \neq c_2} p(c_1 \mid v) p(c_2 \mid v)$$
++ Težava z večvrednostmi atributi &rarr; relativni informacijski prispevek ($GR$), alternativne mere ($Gini$), binarizacija atributov (višja $CA$)
++ Kratkovidnost TDIDT: najboljši atribut izbira lokalno
++ Privzeta točnost: uporabljamo verjetnost večinskega razreda &rarr; drevo je uporabno, če je njegova točnost višja od privzete
++ Pristranost na učni množici: lahko pride do pretiranega prilagajanja na učni množici &rarr; podatke zato delimo na učno in testno množico ($70-30$)
+
+#### Učenje dreves iz šumnih podatkov
+
+Možne težave zaradi nepopolnih podatkov:
++ učenje šuma in ne dejanske funkcije, ki generira podatke
++ pretirano prilagajanje vodi v prevelika drevesa
++ slaba razumljivost dreves
++ nižja $CA$ na novih podatkih
+
+Rešitev za nastale težave je **rezanje dreves**. Ideja za rešitev je, da nižji deli drevesa predstavljajo večje lokalno prilagajanje učnim podatkom. Zato drevo režemo, da dosežemo večjo posplošitev.
+
+Rezanje dreves:
++ **Rezanje vnaprej**:
+    + dodatni kriterij za zaustavitev gradnje drevesa, hitro, kratkovidno
++ **Rezanje nazaj**:
+    + po gradnji celotnega drevesa odstranimo manj zanseljive dele, počasno, upošteva informacijo celega drevesa
+>    + **REP - rezanje z zmanjševanjem napake:**
+>        + uporaba rezalne možice
+>        + delitev podatkov: učna množica (70%, od tega 70% za gradnjo, 30% rezalna), testna množica (30%)
+>    + **MEP - rezanje z minimizacijo napake:**
+>        + za vsako vozlišče izračunamo statično napako ($e$), in vzvratno napako ($E$)
+>        + režemo, če je statična napaka manjša od vzvratne ($E \geq e$)
+
+Ocenjevanje verjetnosti (ocena napake v vozlišču):
+>* **Laplaceova ocena:**
+>    + ne upošteva apriorne verjetnosti
+>    $$p = \frac{n + 1}{N + k}$$
+>* **m-ocena:** 
+>    + manj kot je šuma, manjši je $m$
+>    + posplošitev Laplaceove za $m=k$, $p_a = \frac{1}{k}$
+>    $$p = \frac{n + p_am}{N + m}$$
+
+#### Ocenjevanje učenja
+
+Hipoteze ocenjujemo glede na njihovo točnost, razumljivost in/ali kompleksnost. Točnost lahko ocenjujemo na učnih, testnih (intervali zaupanja) ali novih podatkih. Za uspešno učenje in za zanesljivo ocenjevanje rabimo čim več podatkov, kar si nasprotuje. Možni rešitvi sta izločevanje testne množice kadar je učnih podatkov dovolj, ali večkratne delitve na učno in testno množico.
+
+**k-kratno prečno preverjanje:**
++ celo učno množico razdelimo na $k$ disjunktnih množic
++ za vsako disjunktno množico, to množico uporabimo kot **testno**, preostalih $k-1$ množic pa kot **učno**
++ vplive izbranega razbitja na podmnožice zmanjšamo z večkratnim ponavljanjem preverjanja
++ metoda **izloći enega:** $k$ je enak številu primerov, najbolj stabilno, časovno zelo zamudno
+
+#### Vrste atributov, diskretizacija, obravnava manjkajočih vrednosti
+
+Zvezne ali numerične atribute načeloma diskretiziramo z intervali, ki **maksimizirajo informacijski prispevek**.
+
+Obravnava **manjkajočih vrednosti atributov** vključuje različne pristope, kot so učenje z manjkajočimi vrednostmi, ignoriranje primerov z neznanimi vrednostmi, uporaba posebne oznake (NA/UNKNOWN), nadomeščanje manjkajočih vrednosti (npr. z povprečno, najbolj pogosto ali napovedano vrednostjo)...
+
+#### Naivni Bayesov klasifikator
 

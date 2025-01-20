@@ -48,3 +48,85 @@ Multiobjective optimization - fitness function with several objectives, $min F(x
 #### Neuroevolution
 + evolving neuros/topologies
 + evolving weights instead of backpropagation/gradient descent
+
+
+# Statistical Predictive Modeling
+
+#### Learning
++ act of acquiring new or modifying and reinforcing existing knowledge, behaviours, skills, values, preferences
++ synthesizing different types of information
++ statistical learning &rarr; finding a predictive function based on data
++ basic task in ML &rarr; learning from past examples with known outcomes
+
+#### Notation
++ the variable we wish to predict/target: $Y$
++ input variables/attributes, features: $X_i$
++ input vectors form a matrix: $X = \begin{pmatrix} x_{11} & x_{12} & \cdots & x_{1p} \\ x_{21} & x_{22} & \cdots & x_{2p} \\ \vdots & \vdots & \ddots & \vdots \\ x_{n1} & x_{n2} & \cdots & x_{np} \end{pmatrix} $
++ **model: $Y = f(X) + \epsilon$**
++ $Y_i = f(X_i)+\epsilon_i$
+
+#### Goals of learning
++ **prediction:**
+    + if we make a good estimate for $f$ and we have small variance of $\epsilon$, we can make accurate predictions for $Y_i$ based on new $x_i$
++ **inference:**
+    + relationship between $Y$ and $X_i$
+
+#### Statistical learning methods
+
+**Parametric methods:**
++ reduce the problem of estimating $f$ to estimating a set of parameters in 2 steps
++ **step 1** &rarr; come up with a model of $f$ (usually linear): $f(X_i) = \beta_0 + \beta_1 X_{i1} + \beta_2 X_{i2} + \cdots + \beta_p X_{ip}$
++ **step 2** &rarr; use training data to fit the model and estimate unknown parameters $\beta_i$
+
+**Non-parametric methods:**
++ no assumptions about $f$
++ advantage &rarr; accurately fit a wider range of possible shapes of $f$
++ disatvantage &rarr; need a large amount of observations
+
+**Trade-off between prediction accuracy and model interpretability:**
++ simple methods produce models that are easier to interpret
++ it's possible to get more accurate predictions with simpler models (hard models are harder to git)
+
+#### Dividing learning problems
+
++ **Supervised learning:**
+    + both the predictions ($X_i$) and the response ($Y_i$) are observed
++ **Unsupervised learning:**
+    + only observe the predictions ($X_i$) 
+    + use the predictions to guess the response and then build a model *(clustering)*
++ **Semi-supervised learning:**
+    + small sample of labelled instances are observed, a large sample of unlabeled instances
+    + initial supervised model used to label unlabeled instances
+    + add the ost reliable predictions to the training set for next iteration
++ **Self-supervised learning:**
+    + learns from unlabeled data
+    + labels obtained from related properties of the data
+    + predicts unobserved/hidden property of the input
++ **Weakly-supervised data:**
+    + noisy sources used to provide supervision signal for labeling large amounts of training data for supervised learning
+
+#### Regression VS classification
+We can split **supervised learning problems** into regression and categorical problems. In **regression** problems $Y$ is continuous and in **classification** problems, $Y$ is categorical. Some methods
+
+#### Data mining
+Association and correlation analysis:
++ frequent patterens
++ association, correlation VS causality
+
+Outlier analysis:
++ **outlier** = data object that does not comply with the general behaviour of the data
++ noise or exception?
+
+#### Criteria of success for ML
+The goal of classification is minimizing the test error. Many algorithms solve optimization problems - minimizing the error.
+
+Criteria of success for ML:
++ **regression:**
+$$\text{MSE} = \frac{1}{n} \sum_{i=1}^n (y_i - f'(x_i))^2$$
++ **classification:**
+$$\text{CA} = \frac{1}{n} \sum_{i=1}^n I(y_i = y'_i)$$
+
+#### No-Free-Lunch theorem
+If no information about the target function $f$ is provided:
++ generally no classifier is better than some other
++ generally no classifier is better than random

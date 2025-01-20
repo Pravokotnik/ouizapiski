@@ -283,3 +283,4 @@ $$\text{FOIL\_Prune}(\text{Rule}) = \frac{\text{pos} - \text{neg}}{\text{pos} + 
     + model builders unconsciously process data in ways that affirm preexisting beliefs and hypotheses
 + **experimenter's bias:**
     + model builder keeps training the model until it produces a result that aligns with their original hypothesis
+

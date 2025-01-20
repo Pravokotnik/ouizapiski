@@ -130,3 +130,156 @@ $$\text{CA} = \frac{1}{n} \sum_{i=1}^n I(y_i = y'_i)$$
 If no information about the target function $f$ is provided:
 + generally no classifier is better than some other
 + generally no classifier is better than random
+
+
+# Bias, variance and predictive models
+
+#### Bias and variance of prediction models
+Our method designed to minimize the error on the training data. We care about how well the method **generalizes** - how it works on new data (test data). In general, the more flexible a method is, the better it will fit the training data. The less flexible the method, the easier it is to interpret the data.
+
+**Bias-variance trade-off:**
++ **bias:**
+    + error we get by modeling a complicated real life problem by a much simpler problem
+    + $\text{bias}=E[Y]-f(x)$
+    + the more flexible a method is, the less bias it will have
++ **variance:**
+    + how much the estimate for $f$ would change if it had a different training data set
+    + $\text{Var} = E[(Y-E[Y])^2]$
+    + the more flexible a method is, the more variance it has
+
+<table style="border-collapse: collapse; border: none;">
+<tr>
+<td valign="top" width="50%" style="border: none;">
+
+**Bias-variance trade-off:**
++ **bias:**
+    + Error we get by modeling a complicated real-life problem by a much simpler problem.
+    + $\text{bias} = E[Y] - f(x)$
+    + The more flexible a method is, the less bias it will have.
++ **variance:**
+    + How much the estimate for $f$ would change if it had a different training data set.
+    + $\text{Var} = E[(Y-E[Y])^2]$
+    + The more flexible a method is, the more variance it has.
++ **trade-off:**
+    + for any given $X=x_0$, the expected test MSE for new $Y$ at $x_0$ will be:
+    $$\text{ExpectedTest MSE} = \text{bias}^2 + Var + \sigma^2$$
+    where $\sigma$ is an irreducible error
+    + as the method gets more complex, the bias will decrease and the variance will likely increase
+
+</td>
+<td valign="top" width="50%" style="border: none;">
+
+![Optional Text](is-slike/biasvariance.png)
+<!-- Replace `URL_to_Image` with the actual URL of your image -->
+
+</td>
+</tr>
+</table>
+
+#### Bayes optimal classifier
+
+**Bayes optimal classifier** is obtained by selecting the class $j$, which mazimizes the probability $P(Y=j|X=x_0)$. It implies that learning is an estimation of conditional data distribution.
+
+**Bayes error rate** is the lowest possible error rate that could be achieved, if we knew the true probability distribution. No classifier than Bayes error rate can get lower error rates on test data.
+
+**Naive Bayesian classifier:**
+$$P(C \mid X_1, X_2, \ldots, X_n) \approx \frac{P(C) \cdot \prod_{i} P(X_i \mid C)}{\prod_{i} P(X_i)}$$
+
+#### Simple regression models:
++ Linear models
++ Nearest neighbor
++ Regression trees, regression rules
+
+#### K-Nearest Neighhbors
++ flexible approach to estimate Bayes classifier
++ for given $x$ we find $k$ closest neighbors to $x$ in the training data and examine their $y$'s 
++ predict based on majority class of $y$
+
+**KNN classifier:**
+$$\Pr(Y = j \mid X = x_0) = \frac{1}{K} \sum_{i \in N_0} I(y_i = j)$$
+
+**Training VS test errors:**
+* training error decreases with $k$
+* test error rate decreases at first (reduction in bias dominates), but then starts to increase (increase in variance dominates)
+* double descent curve (overparametrization at interpolation threshold)
+
+**KNN for regression:**
+$$f(x) = \frac{1}{k} \sum_{x_i \in N_i} y_i$$
+
+#### Decision trees and rules
+
+**Using IF-THEN rules for classification:**
++ **assesment** of rules &rarr; measuring the coverage and accuracy of rules:
+    + coverage = the proportion of dataset instances that a rule applies to
+    + ccuracy =  how many of these instances are correctly predicted
++ **conflict resolution** &rarr; when multiple rules are applicable we use different methods to prioritize them:
+    + size ordering: highest priority goes to toughest requirements
+    + clas-based ordering: misclassification cost per class
+    + **decision list** (rule-based ordering): rules organized into priority list according to some measure 
+
+**Rule extraction from a decision tree:**
++ one rule created for each path from root to leaf
++ mutually exclusive and exhaustive rules (conjunctions)
+
+**Rule induction, sequential covering method:**
++ xtracts rules directly from training data
++ rules learned sequentially &rarr; rule for a class $C_i$ will cover many instances of $C_i$ but none/few instances of other classes
++ rules learned one by one, each time a rule is learned the instances that this rule covers, are removed
+
+```python
+while (enough target instances left)
+    generate a rule
+    remove positive target instances satisfying this rule
+
+def generate a rule:
+    while(true)
+        find the best predicate p
+        if ruleQuality(p) > threshold then add p to current rule
+        else break
+```
+**How to learn a rule:**
++ start with a general rule &rarr; empty condition, applies to all instances
++ attribute addition using a greedy strategy
++ measure rule quality &rarr; coverage, accuracy
+$$\text{Gain}(R_0, R_1) := t \cdot \left( \log_2 \left( \frac{p_1}{p_1 + n_1} \right) - \log_2 \left( \frac{p_0}{p_0 + n_0} \right) \right) $$
++ rule pruning &rarr; use the created rules to prune them using an independent set of validation instances (favors rules that maintain high accuracy), decision on pruning:
+$$\text{FOIL\_Prune}(\text{Rule}) = \frac{\text{pos} - \text{neg}}{\text{pos} + \text{neg}}$$
+
+#### Biases in data
++ ML models aren't inherently objective
++ models trained by data sets which can be susceptible to bias
++ when building models we must be aware of common human biases than can manifest in data
+
+**Reporting bias:**
++ frequency of outcomes captured in the data set does not accurately reflect their real-world frequency
++ because people document unusual circumstances, assuming the ordinary can go without saying
++ *very positive/negative comments but not mid ones*
+
+**Automation bias:**
++ tendency to favor results generated by automated systems or opposite
++ *model to identify tooth decay, but is worse than human inspections*
+
+**Selection bias:**
++ if data set's examples are chosen in a way that is not reflective of their real-world distribution
++ **coverage bias:**
+    + data not selected in a representative way
+    + *predicting future sales but not interviewing people who didn't buy the product*
++ **non-response bias:**
+    + oarticipation gaps in the data-collection process
+    + *predicting future sales and the customers who bought competing poducts refuse to complete the survey*
++ **sampling bias:**
+    + not using proper randomization during data collection
+
+**Group attribution bias:**
++ tendency to generalize what is true of individuals to an entire group
++ **in-group bias:**
+    + preference for members of a group to which you belong
++ **out-group bias:**
+    + tendency to stereotype individual members of the group to which you don't belong
+
+**Implicit bias:**
++ assumptions are made based on one's personal experiences that don't necessarily apply generally
++ **confrirmation bias:**
+    + model builders unconsciously process data in ways that affirm preexisting beliefs and hypotheses
++ **experimenter's bias:**
+    + model builder keeps training the model until it produces a result that aligns with their original hypothesis

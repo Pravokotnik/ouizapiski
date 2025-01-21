@@ -143,4 +143,42 @@ Nomogram je pristop za vizualizacijo naivnega Bayesovega modela. Prikazuje pomem
 >(izračun)
 
 #### Metoda $k$ najbližjih sosedov
++ neparametrična metoda
++ učenje na podalgi posameznih primerov
++ leno učenje (odlaša z učenjem do povpraševanja o novem primeru)
++ ideja: ob vprašanju po vrednosti odvisne spremenljivke za novi primer poiščemo $k$ najbližjih primerov glede na neko mero razdalje
 
+**Razdalja Minkowskega:**
+$$L^p(x_i, x_j) = \left(\sum_k |x_{i,k} - x_{j,k}|^p\right)^{\frac{1}{p}}$$
+
+>**Evklidska razdalja:**
+>$$L^2(x_i, x_j) = \sqrt{\sum_k (x_{i,k} - x_{j,k})^2}$$
+>
+>**Manhattenska razdalja:**
+>$$L^1(x_i, x_j) = \sum_k |x_{i,k} - x_{j,k}|$$
+
+Za diskretne atribute uporabljamo **Hammingovo razdaljo** (đtevilo neujemajočih atributov pri primerih).
+
+Lahko pride do vpliva intervala vrednosti na razdaljo, zato je potrebna **normalizacija**. Prav tako lahko primeri pri velikem številu dimenzij postanejo zelo oddaljeni - **prekletstvo dimenzionalnosti**.
+
+#### Lokalno utežena regresija - $k$NN za regresijo
+
+Uteževanje z razdaljo:
+$$ h(x) = \frac{\sum_{i=1}^k w_i f(x_i)}{\sum_{i=1}^k w_i} $$
+$$ w_i = \frac{1}{(d(x,x_i))^2} $$
+
+Pri uteževanju lahko uporabljamo tudi poljubno jedrno funkcijo - Gaussovo jedro. Če je jedro preširoko, lahko pride do underfittinga, če pa je jedro preozko, pa lahko pride do overfittinga.
+
+#### Regresijska drevesa
+
+Regresijski problem je, ko imamo **zvezno ciljno spremenljivko**. So odločilna drevesa za regresijske probleme. Njihovi listi predstavljajo povprečno vrednost označb primerov v listih, ali preprost napovedni model za nove primere.
+
+>Za merjenje nedoločenosti uporabljamo **srednjo kvadratno napako** v vozlišču $v$:
+>$$\text{MSE}(v) = \frac{1}{n} \sum_{i=1}^n (y_i - \bar{y})^2$$
+>
+>Cilj je **minimizirati rezidualno nedoločenost**:
+>$$I_{\text{res}}(A) = p_{\text{left}} \cdot I_{\text{left}} + p_{\text{right}} \cdot I_{\text{right}}$$
+>&nbsp;
+
+
+# Linearna regresija, nevronske mreže, nenadzorovano učenje

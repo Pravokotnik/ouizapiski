@@ -181,4 +181,102 @@ Regresijski problem je, ko imamo **zvezno ciljno spremenljivko**. So odločilna 
 >&nbsp;
 
 
-# Linearna regresija, nevronske mreže, nenadzorovano učenje
+#### Linearna regresija
+
+**Linearni modeli:**
++ uporabimo pri klasifikaciji in regresiji
++ linearni model z 1 odvisno spremenljivko: $h(x) = w_1x+w_0$
++ linearna regresija je postopek iskanja funkcije $h(x)$, ki se najbolje prilega učnim podatkom
+
+Optimizacijo izvcajamo z minimiziranjem $\text{MSE}$:
+$$
+\text{napaka}(h) = \sum_{j=1}^N (y_j - (w_1 x_j + w_0))^2
+$$
+
+Ker lokalnih minimumov ni in obstajajo samo globalni, obstaja analitična rešitev:
+$$
+w_0 = \frac{\sum y_j - w_1 \sum x_j}{N}
+$$
+$$
+w_1 = \frac{N \left(\sum x_j y_j\right) - \left(\sum x_j\right)\left(\sum y_j\right)}{N \left(\sum x_j^2\right) - \left(\sum x_j\right)^2}
+$$
+
+**Posplošitev v več dimenzij:**
++ imamo več neodvisnih spremenljivk
++ $h(x) = w_0 + \sum_i w_i x_{j,i}$
++ analitična določitev uteži: $\mathbf{w} = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y}$
+
+V praksi uporabimo **gradientni spust**:
+<div align="center">
+  <img src="oui-slike/gradient.png" alt="Optional Text" width="30%" height="30%">
+</div>
+
+**Linearni modeli pri klasifikaciji:**
++ $h_w(x) = w_0 + w_1 x_1 + ... + w_n x_n$
++ preprosto iskanje rešitve &rarr; **stohastični gradientni spust**: $w_i \leftarrow w_i + \eta (y - h(x)) x_i$
+<div align="center">
+  <img src="oui-slike/linmodklas.png" alt="Optional Text" width="90%">
+</div>
+
+#### Nevronske mreže
+
+**Umetni nevron izračuna uteženo linearno kombinacijo vhodov in jo z aktivacijsko funkcijo preslika v izhodno vrednost.**
+
+**Aktivacijska funkcija:**
++ cilj: zagotoviti da cela nevronska mreža zagotavlja nelienarno funkcijo
++ **nevron** &rarr; implementira linearno funkcijo v problemskem prostoru
++ **nevronska mreža** &rarr;  množica nevronov, ki so medsebojno povezani v topologijo
+    + izračunavanje kombinacij funkcij različnih nevronov
+
+**Implementacije mrež:**
++ **feed-forward network** &rarr; aciklične povezave samo v smeri od vhoda proti izhodom (*ni hranjenja notranjega stanja*)
+    + nevroni v plasteh
+    + en ali več izhodov
++ **rekurenčna mreža** &rarr; uporablja izhode kot ponovne vhode v mrežo
+    + kratkoročni spomin (*hrani notranje stanje*)
++ **konvolucijske mreže**
+
+<div align="center">
+  <img src="oui-slike/nevronska.png" alt="Optional Text" width="70%">
+</div>
+
+**Vzvratno razširjanje napake:**
+1. inicializiraj uteži
+2. izraćunaj napovedi
+3. izračunaj izgubo
+4. vzvratno razširi napako iz izhoda proti vhodu:
+    + gradient napake za vse nivoje
+5. za vsak $w$ uporabi obliko gradientnega spusta, da popraviš vrednost uteži s hitrostjo učenja
+    + $w \leftarrow w - \eta \frac{\partial E}{\partial w}$
+6. ponavljaj 2-5 do ustavitvenega kriterija
+
+**Učenje nevronske mreže:**
++ za dani učni primer izračunami aktivacije nevronov in jih primerjamo s ciljnimi vrednostmi: $E = \frac{1}{2} \sum_k \left( a_i^{(L)} - y_i \right)^2$
++ cilj: nastaviti **vse uteži** v nevronski mreži, da se napaka minimizira (zanima nas $\frac{\delta E}{\delta w}$)
+<div align="center">
+  <img src="oui-slike/ucenjenevr.png" alt="Optional Text" width="70%">
+</div>
+<div align="center">
+  <img src="oui-slike/ucenjenevr2.png" alt="Optional Text" width="60%">
+</div>
+<div align="center">
+  <img src="oui-slike/ucenjenevr3.png" alt="Optional Text" width="60%">
+</div>
+
+#### Nenadzorovano učenje
+
+Pri nenadzorovanem učenju **nimamo cilnje spremenljivke**, zato nas napoved primera ne zanima. Naš cilj je odkiravnje zakonitosti glede porazdelitve učnih primerov - ali jih lahko razdelimo v skupine/priročno vizualiziramo... Je bolj **subjektivno** kot nadzorovano, in velikokrat lažje pridobimo neoznačene podatke.
+
+**Gručenje:**
++ iskanje homogenih podskupin v učnih podatkih
++ **hierarhično gručenje** &rarr; iščemo vnaprej neznano število gruč, rezultat je dendrogram
+    + **združevalni pristop:** gradnja dendrograma se začne od listov proti korenu s postopkom združevanja glede na razdaljo
+        + *single linkage*: razdalja med najbližjima primeroma
+        + *complete linkage*: razdalja med najbolj oddaljenema primeroma
+        + *average linkage*: povprečno razdaljo med vsemi primeri
+    + **delilni pristop:** od korena proti listom, deljenje gruč na podgruče
+    + *opombe: normalizacija atibutov, časovna zahtevnost $O(n^2\log n)$*
++ **k-means/metoda voditeljev** &rarr; iterativno gručenje primerov v vnaprej podano število $k$ gruč
+    + sprva naključno priredimo vsak učni primer eni od gruč
+    + za vsako gručo izračunamo centroid in spremenimo pripadnosti učnih primerov ter ponavljamo do konvergence
+    + v vsakem koraku se zmanjšuje varianca znotraj gruč, ne najdemo globalnega optimuma, rešitev odvisna od začetne inicializacije, občutljiv na šum

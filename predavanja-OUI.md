@@ -271,9 +271,9 @@ Pri nenadzorovanem učenju **nimamo cilnje spremenljivke**, zato nas napoved pri
 + iskanje homogenih podskupin v učnih podatkih
 + **hierarhično gručenje** &rarr; iščemo vnaprej neznano število gruč, rezultat je dendrogram
     + **združevalni pristop:** gradnja dendrograma se začne od listov proti korenu s postopkom združevanja glede na razdaljo
-        + *single linkage*: razdalja med najbližjima primeroma
-        + *complete linkage*: razdalja med najbolj oddaljenema primeroma
-        + *average linkage*: povprečno razdaljo med vsemi primeri
+        >+ *single linkage*: razdalja med najbližjima primeroma
+        >+ *complete linkage*: razdalja med najbolj oddaljenema primeroma
+        >+ *average linkage*: povprečno razdaljo med vsemi primeri
     + **delilni pristop:** od korena proti listom, deljenje gruč na podgruče
     + *opombe: normalizacija atibutov, časovna zahtevnost $O(n^2\log n)$*
 + **k-means/metoda voditeljev** &rarr; iterativno gručenje primerov v vnaprej podano število $k$ gruč

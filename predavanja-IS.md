@@ -357,5 +357,53 @@ In order to select attributes, we have to rank them. The success of feature eval
 + high computational load, very effective
 
 #### Model evaluation
+
++ Regression: MSE, MAE
++ Classification: accuracy, sensitivity, specificity, AUC, precision, recall
++ Comparing classifiers:
+    + Mean and confidence intervals
+    + Cost-benefit analysis and ROC Curves
+    + Rank-based tests (Friedman/Nemenyi)
+    + Bayesian (hierarchical) tests
+
+$$\text{Accuracy} = \frac{TP + TN}{\text{All}}$$
+
+$$\text{Error Rate} = 1 - \text{Accuracy} = \frac{FP + FN}{\text{All}}$$
+
+$$\text{Sensitivity} = \frac{TP}{P}$$
+
+$$\text{Specificity} = \frac{TN}{N}$$
+
+$$\text{Precision} = \frac{TP}{TP + FP}$$
+
+$$\text{Recall} = \frac{TP}{TP + FN}$$
+
+$$F = \frac{2 \times \text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$$
+
+$$F_\beta = \frac{(1 + \beta^2) \times \text{Precision} \times \text{Recall}}{\beta^2 \times \text{Precision} + \text{Recall}}$$
+
++ Multiclass evaluation: macro average (several one-versus-all), micro average (for each class seperately)
++ ROC curve: shows TP and FP rate, area under ROC curve is used to summarize overall performance &rarr; the larger AUC the better
+
+**Issues affecting model selection:**
++ accuracy
++ speed (training time, prediction time)
++ robustness (handling noise, missing values)
++ scalability
++ interpretability
+
+**Unsupervised feature selction:**
++ preserve similarity between instances
+
+**Semi-supervised feature selction:**
++ small sample of labelled and large sample of unlabelled data
++ use label information of labeled data, data distribution/structure of both
+
+**Stability of feature seleciton:**
++ issue for high dimensional small sample data
++ solution = **ensemble approach**:
+    + produce diverse feaure sets
+    + aggregate them
+
 #### Dimensionality reduction
 #### Feature selection extensions: unsupervised and semi-supervised learning, multitask, multi-view, multi-label learning

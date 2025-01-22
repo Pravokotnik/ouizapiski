@@ -284,3 +284,78 @@ $$\text{FOIL\_Prune}(\text{Rule}) = \frac{\text{pos} - \text{neg}}{\text{pos} + 
 + **experimenter's bias:**
     + model builder keeps training the model until it produces a result that aligns with their original hypothesis
 
+#  Feature engineering
+
+#### Data preprocessing
+
++ **Data cleansing** &rarr; removing/correcting corrupted/invalid values
++ **Instances selection and partitionin**g &rarr; training, evaluation, testing sets
++ **Feature tuning** &rarr; scaling/normalizing/clipping, outliers...
++ **Feature transformation** &rarr; discretization/numerization (converting - depends on what we need)
++ **Feature extraction** &rarr; lower the dimensionality (PCA)
+    + reduces time and spac complexity, more robust on small datasets, more interpretable
++ **Feature selection** &rarr; discard irrelevant/redundant features
+    + better learning performance (accuracy, computational cost, interpretablity)
++ **Feature construction** &rarr; creating new features using different operators
++ For unstructured data: often only modest preprocessing is needed for neural networks
+
+#### Feature subset selection: filter, wrapper and embedded methods
+
+In order to select attributes, we have to rank them. The success of feature evaluation is measured through the success of learning. We have 3 types of feature selection methods.
+
+**Filter methods:**
++ independent on learning algorithm, select the most discriminative feautres based on criteria (IG)
++ different heuristic measures of attribute evaluation
+    + impurity based: IG (purity of labels before and after the split), IGR, Gini, MSE...
+    + context sernsitive measures: Relief
+        + evaluate attribute according to its power of seperation between near instances
+        + no assumption of conditional independence, context sensitive
+        ```matlab
+        %Input: set of instances <x_i,tau_i>
+        %Output: the vector W of attributes’ evaluations
+
+        set all weights W[A] := 0.0;
+        for i := 1 to m do begin
+            randomly select an instance R;
+            find nearest hit H and nearest miss M;
+            for A := 1 to #all_attributes do
+                W[A] := W[A] - diff(A,R,H)/m + diff(A,R,M)/m;
+        end;
+        ```
+        + function $\text{diff}$:
+            + nominal: $\text{diff}(A, I_1, I_2) = \begin{cases} 0, & \text{if } value(A, I_1) = value(A, I_2) \\ 1, & \text{otherwise} \end{cases}$
+            + numerical: $\text{diff}(A, I_1, I_2) = \frac{|value(A, I_1) - value(A, I_2)|}{max(A) - min(A)}$
+            + distance between 2 instances: $\delta(I_1, I_2) = \sum_{i=1}^a \text{diff}(A, I_1, I_2)$
++ multivalued attributes (insuficient statistical support in some splits), numeric attributes (can require prior discretization)
+
+**Embedded methods:**
++ select features in the process of learning
++ loss function composed of prediction error and weight of included features: $L(X, Y, f) = \sum_{i=1}^n I(Y_i \neq f(x_i)) + \lambda \sum_{j=1}^a I(A_j \in X)$
++ ridge regression:
+    $$\sum_{i=1}^n \left( y_i - \beta_0 - \sum_{j=1}^p \beta_j x_{ij} \right)^2 + \lambda \sum_{j=1}^p \beta_j^2 = \text{RSS} + \lambda \sum_{j=1}^p \beta_j^2$$
+    + minimizes $\sum_{j=1}^p \beta_j^2$, adds a penalty term &rarr; improves the fit, bias-variance trade-off
+    + estimates more biased than $\text{OLS}$, but have lower variance
+    + for any given $\lambda$, we only need to fit 1 model with simple computations, we can use ridge regression where $\text{OLS}$ fails ($p>n$)
++ LASSO method:
+    + ridge regression imperfect: the final model includes all variables and is hard to interpret
+    $$\text{RSS} + \lambda \sum_{j=1}^p |\beta_j|$$
+    + minimizes $\sum_{j=1}^p |\beta_j|$
+    + using this method, the coefficients can be set to 0, which means it's easier to interpret
+
+**Wrapper methods:**
++ intended learning algorithm to evaluate the features (SVM)
+    ```matlab
+    start with an empty set of features S={} % forward selection
+    repeat:
+        add all unused features one by one to S
+        train a prediction model with each set S
+        evaluate each prediction model
+        keep the best added feature in S
+    until all features are added to S
+    return the best set of features encountered
+    ```
++ high computational load, very effective
+
+#### Model evaluation
+#### Dimensionality reduction
+#### Feature selection extensions: unsupervised and semi-supervised learning, multitask, multi-view, multi-label learning

@@ -427,3 +427,37 @@ Pri igranju iger preiskujemo prostor med 2 nasprotnikoma. Je **več-agentno okol
     + ob vračanju posodabljamo $[\alpha , \beta]$ glede na najdene vrednosti v poddrevesih
     + če za vozlišče velja $\alpha \geq \beta$ prekinemo preiskovanje ostalih poddreves
 + zniža časovno zahtevnost na $O(b^{m/2})$
+
+
+# Planiranje, razporejanje opravil
+
+#### Predstavitev problema
++ postopek načrtovanja akcij, ki dosežejo želene cilje
++ **plan** = zaporedje akcij, ki pripelje od začetnega do končnega stanja
++ formalni opis problema: začetno stanje, akcije, omejitve
++ STRIPS, ADL, PDDL
+
+#### Planiranje s klasičnim preiskovanjem prostora stanj
++ neinformirani, informirani, lokalni preiskovalni algoritmi
++ rezultat = kombinatorična eksplozija prostora stanj
++ iskanje se lahko razvija z uporabo akcij, ki niso relevantne
++ rešitve: dobra hevristična ocena, drugačen pristop
+
+#### Planiranje s sredstvi in cilji
++ izberemo nerešen cilj, izberemo akcijo ki ga doseže, akcijo izvedemo z izvedbo predpogojev
++ **Sussmanova anomalija:**
+    + problem interakcije med cilji
+    + cilji obravnavani lokalno, z doseganjem enega cilja lahko razveljavimo druge
+    + rešitve: drugačen algoritem (regresiranje), nelinearno planiranje
+
+#### Planiranje z regresiranjem ciljev
++ rešitev za Sussmanovo anomalijo
++ vzvratno preiskovanje od cilja proti začetnemu stanju
++ izberemo akcijo, ki doseže čimvečjo množico izbranih ciljev, izračunamo predhodne cilje ob uporabi te akcije, nadaljujemo z regresiranjem
+
+#### Razporejanje opravil
++ dodatne omejitve: časovne, resursi
++ **metoda kritične poti:** kritična pot je najdaljša, določa trajanje celotnega plana
++ **algoritem najmanjše časovne rezerve**: vsaki iteraciji dodeli najbolj zgoden možen začetek akciji, ki ima izpolnjene vse predhodnike in ima namanj časovne rezerve
+
+# Sklepanje

@@ -280,3 +280,84 @@ Pri nenadzorovanem učenju **nimamo cilnje spremenljivke**, zato nas napoved pri
     + sprva naključno priredimo vsak učni primer eni od gruč
     + za vsako gručo izračunamo centroid in spremenimo pripadnosti učnih primerov ter ponavljamo do konvergence
     + v vsakem koraku se zmanjšuje varianca znotraj gruč, ne najdemo globalnega optimuma, rešitev odvisna od začetne inicializacije, občutljiv na šum
+
+
+# Preiskovanje
+
+#### Definicija in cilji področja
+
+Za **formalni opis problema** potrebujemo:
++ začetno stanje
++ opis vseh možnih akcij na razpolago v posameznih stanjih
++ prehodno funkcijo (definira naslednika stanja)
++ ciljni predikat
++ cenilno funkcijo, ki vsaki poti določi ceno
+
+Problem rešujemo z iskanjem poti v grafu s preiskovanjem. Rešitev problema je zaporedje akcij, ki vodi od začetnega do ciljnega vozlišča.
+
+Preiskovalne algoritme delimo na:
++ **neinformirani:**
+    + razpolagajo samo z definicijo problema
+    + BFS, DFS, iterativno poglabljanje, cenovno-optimalno iskanje
++ **informirani:**
+    + razpolagajo z dodatno informacijo (domensko znanje, hevristične ocene) za boljšo učinkovitost
+    + A*, IDA*, hill climbing, simulirano ohlajanje
+
+Učinkovitost:
++ drevo ima višino $d$ in stopnjo vejanje $b$ &rarr; $b^d$ vozlišč, $max$ največja globina drevesa, C* cena optimalne rešitve, $\epsilon$ najmanjša cena povezave
++ **popolnost** &rarr; algoritem zagotovo najde rešitev, če ta obstaja
++ **optimalnost** &rarr; algoritem najde optimalno rešitev
++ **prostorska in časovna zahtevnost**
+
+#### Neinformirani preiskovalni algoritmi
+
+**BFS:**
++ hranimo kopije že obiskanih vozlišč
++ vozlišča, ki sklenejo cikel, takoj zavržemo
++ fronta = listi drevesa, ki so kandidati za razvijanje
++ zagotavlja najkrajšo rešitev
++ učinkovitost: popolnost, optimalnost (ni nujno), časovna in prostorska zahtevnost $O(b^d)$
+
+**DFS:**
++ ne zagotavlja najkrajše rešitve
++ nujno moramo preprečiti cikel
++ lahko implementiramo rekurzivno
++ učinkovitost: nepopolnost, neoptimalnost, časovna zahtevnost $O(b^{max})$, prostorska zahtevnost $O(bm)$
+
+**Iterativno poglabljanje:**
++ izboljšan DFS
++ učinkovitost: popolnost, optimalnost, časovna zahtevnost $O(b^d)$, prostorska zahtevnost $O(bd)$
+
+**Dvosmerno iskanje:**
++ 2 iskanji - 1 iz začetka, 2 iz cilja, nekje se srečata &rarr; nižja časovna zahtevnost
++ vozlišča morajo imeti kazalce na predhodnika
++ učinkovitost: popolnost, optimalnost, časovna zahtevnost $O(b^{d/2})$, prostorska zahtevnost $O(b^{d/2})$
+
+**Cenovno-optimalno iskanje:**
++ posploštev DFS
++ če cene vseh povezav niso enake, je optimalno razviti vozlišče z najmanjšo skupno ceno dosedanje poti $g(n)$
++ učinkovitost: popolnost, optimalnost, časovna in prostorska zahtevnost $O\left(b^{1 + \lceil c^* / \epsilon \rceil}\right),$
+
+#### Informirani preiskovalni algoritmi
+
+**Hevristično preiskovanje** je nastalo zaradi potrebe po usmerjanju iskanja z motivacijo, da algoritem hitreje najde optimalno rešitev. **Hevristika** je ocenitvena funkcija za obetavnost vozlišča. Izberemo in razvijemo vozlišče glede na najboljšo vrednost hhevristike. 
+
+**Požrešno iskanje:**
++ vedno razvijemo najbolj obetavno vozlišče glede na hevristično oceno
++ učinkovitost: nepopolnost (ciklanje), neoptimalnost, časovna in prostorska zahtevnost $O(b^m)$
+
+**A$^*$:**
++ $f(n) = g(n) + h(n)$ &rarr; $g(n)$ cena poti do $n$ (znano), $f(n)$ cena od $n$ do najbližjega soseda (ocena)
++ vozlišča v prioritetni vrsti glede na $f(n)$
++ je popoln in optimalen, če ustreza pogoju **dopustnosti**:
+    + hevristika $h(n)$ je dopustna, če nikoli ne precenjuje cene do cilja: $\forall n: h(n) \leq h^*(n) $, kjer je $h^*(n)$ dejanska cena optimalne poti do cilja za vozlišče $n$
+    + dokaz s protislovjem
++ učinkovitost: popolnost in optimalnost za dopustno hevristiko, časovna zahtevnost $O(b^{f(\epsilon)d})$, velika prostorska zahtevnost
+
+**IDA$^*$:**
++ kot iterativno poglavljanje, le da za A*
++ redundanca - ponovno generiranje veliko vozlišč
++ neučinkovit z vozlišča z raznolikimi vrednostmi $f(n)$
++ razvija vozlišča v prioritetnem vrsnem redu, če je hevristična ocena $h(n)$ **monotona/konsistentna**: $\forall n,n' : h(n) \leq c(n,n') + h(n') $ &rarr; če je monotona/konsistentna je tudi **dopustna**
+
+**Kakovost** hevrističnih funkcij lahko ocenimo s številom generiranih vozlišč, faktorjem vejanja...

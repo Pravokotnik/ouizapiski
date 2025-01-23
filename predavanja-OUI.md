@@ -461,3 +461,57 @@ Pri igranju iger preiskujemo prostor med 2 nasprotnikoma. Je **več-agentno okol
 + **algoritem najmanjše časovne rezerve**: vsaki iteraciji dodeli najbolj zgoden možen začetek akciji, ki ima izpolnjene vse predhodnike in ima namanj časovne rezerve
 
 # Sklepanje
+
+#### Bayesovske mreže
++ verjetnostni model, s katerim predstavimo **odvisnosti med slučajnimi spremenljivkami**
++ obravnava negotovosti v dobro matematično utemeljenih bazah znanja
++ usmerjen aciklični graf
++ uporaba za predstavitev verjetnostnega znanja in verjetnostno sklepanje
++ stanje sveta povzamemo z **vektorjem logičnih spremenljivk**, inteligentni agent sklepa na verjetnost resničnosti neke spremenljivke
++ odražajo neodvisnosti spremenljivk
++ brez mrež potrebujemo $2^n-1$ verjetnosti &rarr; nepraktično/nemogoče za veliko število spremenljivk
+
+#### Odvisnosti v mreži
++ **skupni prednik - divergentno vozlišče:**
+    + če imata vozlišči skupnega prednika, ju lahko obravnavamo kot neodvisna
++ **skupni naslednik - konvergentno vozlišče:**
+    + če imata vozlišči skupnega naslednika in sta med seboj odvisna, postanega odvisna (resničnost enega zmanjšuje verjetnost drugega)
++ **veriga:**
+    + zadnji v verigi odvisen zgolj od prednika
+
+#### Neodvisnost v mreži
+Če so podani vsi starši vozlišča $X$, je $X$ neodvisen samo od svojih nenaslednikov.
+Ovojnica Markova zagotavlja neodvisnost opazovanega vozlišča. Če so podani starši, otroci in starši otrok, je $X$ neodvisno od vseh ostalih. 
+
+#### d-ločevanje
++ posplošitev določanja neodvisnih vozlišč
++ $A$ in $B$ sta neodvisni, če obstaja množica vozlišč $E$, ki d-ločuje (*blokira odvisnost med*) $A$ in $B$: $P(A|EB) = P(A|E)$
+
+#### Pravila verjetnostega sklepanja
+1. Verjetnost **konjunkcije**:
+   $$ P(X_1, X_2 \mid C) = P(X_1 \mid C) \cdot P(X_2 \mid X_1, C) $$
+
+2. Verjetnost **gotovega** dogodka:
+   $$ P(X \mid \dots) = 1 $$
+
+3. Verjetnost **nemogočega** dogodka:
+   $$ P(X \mid \dots \sim X \dots) = 0 $$
+
+4. Verjetnost **negacije**:
+   $$ P(\sim X \mid C) = 1 - P(X \mid C) $$
+
+5. Če pogoji **vključuje naslednika $Y$** (vzvratno sklepanje), uporabi posplošeno Bayesovo formulo:
+   $$ P(X \mid Y C) = \frac{P(X \mid C) \cdot P(Y \mid X C)}{P(Y \mid C)} $$
+
+6. Če pogoji C **ne vključuje naslednika** od $X$ $Y$, potem:
+    a) Če $X$ **nima** staršev: 
+        $$ P(X \mid C) = P(X) $$
+    b) Če **ima** $X$ starše $S$:
+        $$ P(X \mid C) = \sum_{S \in \text{staršev}(X)} P(X \mid S) \cdot P(S \mid C) $$
+
+#### Ekvivalenca mrež
+Mreži sta ekvivalentni, če se da **z verjetnostmi ene mreže izraziti verjetnosti druge**. 
+
+**Zadosten pogoj** je, da sta mreži l-ekvivalentni:
++ enaka struktura
++ iste V-strukture (konvergentni trojčki)

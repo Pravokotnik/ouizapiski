@@ -361,3 +361,69 @@ Učinkovitost:
 + razvija vozlišča v prioritetnem vrsnem redu, če je hevristična ocena $h(n)$ **monotona/konsistentna**: $\forall n,n' : h(n) \leq c(n,n') + h(n') $ &rarr; če je monotona/konsistentna je tudi **dopustna**
 
 **Kakovost** hevrističnih funkcij lahko ocenimo s številom generiranih vozlišč, faktorjem vejanja...
+
+#### Lokalni preiskovalni algoritmi in optimizacijski problemi
+
+**Lokalni preiskovalni algoritmi:**
++ izvajajo iterativno ocenjevanje in spreminjanje podanih stanj (*namesto preiskovanja vseh možnih poti*)
++ koristni ko nas zanima zgolj rešitev ali pri optimizacijskih problemih s podano **kriterijsko funkcijo**
++ majhna poraba prostora, dobri približki rešitev
+
+**Plezanje na hrib:**
++ premikanje po prostoru stanj v smeri najboljše izboljšave kriterijske funkcije
++ namen je najti globalni maksimum glede na kriterijsko funkcijo
++ težave: lokalni maksimumi, planote/rame, grebeni (za plezanje navzgor potreben sestop)
++ reševanje iz lokalnih maksimumov:
+    + **koraki vstran** (premik v stran z isto vrednostjo kriterijske funckije)
+    + **stohastično plezanje na hrib** (verjetnostno zbiramo naslednje stanje)
+    + **naključni ponovni zagon**
+
+**Simulirano ohlajanje:**
++ generiramo naključne sosede trenutnega stanja
++ boljše stanje izberemo vedno, slabše pa z določeno verjetnostjo
++ verjetnost izbire neoptimalnega stanja s časom pada
+
+**Lokalno iskanje v snopu:**
++ v spominu hranimo $k$ stanje namesto enega
++ izberemo $k$ optimalnih stanj od sosedov aktualnih stanj &rarr; ponavljamo
+
+#### Preiskovanje brez informacije o stanju
+
+Okolje je **netransparentno**, če nimamo informacije o stanju. Lahko izvajamo preiskovanje prostora verjetnih stanj, ali postopkom omejevanja možnosti kandidatnih stanj.
+
+Definicija problema:
++ verjetna stanja &rarr; potenčna množica vseh možnih stanj
++ zaćetno stanje &rarr; množica vseh možnih dejanskih stanj
++ akcije
++ prehodna funkcija
++ cilnjo stanje &rarr; verjetno stanj, v katerem vsa dejanska stanja izpolnjujejo ciljni predikat
+
+#### Igranje iger
+
+Pri igranju iger preiskujemo prostor med 2 nasprotnikoma. Je **več-agentno okolje**, kjer mora vsak agent upoštevati vpliv akcij drugega agenta na svojo uspešnost. Rešitev igre je **strategija**, ki za vsako možno potezo nasprotnika predvide akcijo. 
+
+**Algoritem MINMAX:**
++ potek igre predstavimo z igralnim drevesom, v katerem si potez izmenjujeta igralca MAX in MIN. Ciljna stanja ovrednotimo s kriterijsko funkcije (pozitivne vrednosti ugodne za MAX)
++ igra ima lahko konstantno vsoto kriterijske funkcije, ali pa spremenljivo
++ MINMAX vrednost vozlišča določa optimalno strategijo (predpostavi, da oba igralca igrata optimalno)
+    + **MAX** &rarr; preferira zvišanje vrednosti kriterijske funkcije
+    + **MIN** &rarr; preferira znižanje vrednosti kriterijske funkcije
+    $$ \text{MINIMAX}(v) =
+        \begin{cases}
+        \text{kriterijska funkcija}(v) & \text{če je } v \text{ končno stanje} \\
+        \max_{a \in \text{akcija}(v)} \text{MINIMAX}(\text{rezultat}(v, a)) & \text{če je igralec } \text{MAX} \\
+        \min_{a \in \text{akcija}(v)} \text{MINIMAX}(\text{rezultat}(v, a)) & \text{če je igralec } \text{MIN}
+        \end{cases} $$
++ učinkovitost: popolnost, optimalnost (če nasprotnik igra z optimalno strategijo), časovna zahtevnost $O(b^m)$, prostorska zahtevnost $O(bm)$
+
+**Alfa-beta rezanje:**
++ alfa-beta algoritem ne upošteva vej, ki ne vplivajo na končno rešitev
++ za vsako vozlišče spremljamo vrednost $[\alpha , \beta]$
+    + $\alpha$ &rarr; najboljša do sedaj najdena rešitev za MAX
+    + $\beta$ &rarr; najboljša do sedaj najdena rešitev za MIN
++ algoritem:
+    + na začetku za začetno vozlišče velja $[ -\infty, +\infty ]$
+    + na vsakem koraku v globino prenašamo $[\alpha , \beta]$
+    + ob vračanju posodabljamo $[\alpha , \beta]$ glede na najdene vrednosti v poddrevesih
+    + če za vozlišče velja $\alpha \geq \beta$ prekinemo preiskovanje ostalih poddreves
++ zniža časovno zahtevnost na $O(b^{m/2})$

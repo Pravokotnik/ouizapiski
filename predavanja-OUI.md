@@ -488,26 +488,26 @@ Ovojnica Markova zagotavlja neodvisnost opazovanega vozlišča. Če so podani st
 + $A$ in $B$ sta neodvisni, če obstaja množica vozlišč $E$, ki d-ločuje (*blokira odvisnost med*) $A$ in $B$: $P(A|EB) = P(A|E)$
 
 #### Pravila verjetnostega sklepanja
-1. Verjetnost **konjunkcije**:
-   $$ P(X_1, X_2 \mid C) = P(X_1 \mid C) \cdot P(X_2 \mid X_1, C) $$
-
-2. Verjetnost **gotovega** dogodka:
-   $$ P(X \mid \dots) = 1 $$
-
-3. Verjetnost **nemogočega** dogodka:
-   $$ P(X \mid \dots \sim X \dots) = 0 $$
-
-4. Verjetnost **negacije**:
-   $$ P(\sim X \mid C) = 1 - P(X \mid C) $$
-
-5. Če pogoji **vključuje naslednika $Y$** (vzvratno sklepanje), uporabi posplošeno Bayesovo formulo:
-   $$ P(X \mid Y C) = \frac{P(X \mid C) \cdot P(Y \mid X C)}{P(Y \mid C)} $$
-
-6. Če pogoji C **ne vključuje naslednika** od $X$ $Y$, potem:
-    a) Če $X$ **nima** staršev: 
-        $$ P(X \mid C) = P(X) $$
-    b) Če **ima** $X$ starše $S$:
-        $$ P(X \mid C) = \sum_{S \in \text{staršev}(X)} P(X \mid S) \cdot P(S \mid C) $$
+>1. Verjetnost **konjunkcije**:
+>   $$ P(X_1, X_2 \mid C) = P(X_1 \mid C) \cdot P(X_2 \mid X_1, C) $$
+>
+>2. Verjetnost **gotovega** dogodka:
+>   $$ P(X \mid \dots) = 1 $$
+>
+>3. Verjetnost **nemogočega** dogodka:
+>   $$ P(X \mid \dots \sim X \dots) = 0 $$
+>
+>4. Verjetnost **negacije**:
+>   $$ P(\sim X \mid C) = 1 - P(X \mid C) $$
+>
+>5. Če pogoji **vključuje naslednika $Y$** (vzvratno sklepanje), uporabi posplošeno Bayesovo formulo:
+>   $$ P(X \mid Y C) = \frac{P(X \mid C) \cdot P(Y \mid X C)}{P(Y \mid C)} $$
+>
+>6. Če pogoji C **ne vključuje naslednika** od $X$ $Y$, potem:
+>    a) Če $X$ **nima** staršev: 
+>        $$ P(X \mid C) = P(X) $$
+>    b) Če **ima** $X$ starše $S$:
+>        $$ P(X \mid C) = \sum_{S \in \text{staršev}(X)} P(X \mid S) \cdot P(S \mid C) $$
 
 #### Ekvivalenca mrež
 Mreži sta ekvivalentni, če se da **z verjetnostmi ene mreže izraziti verjetnosti druge**. 

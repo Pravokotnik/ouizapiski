@@ -167,7 +167,7 @@ We can describe an area by perimeter, compactness, centroid... **Ideal descripto
 
 **Removing noise:**
 + noise = adding high frequencies &rarr; to remove them we apply a low-band pass filter (allows low-frequency signals to pass through while reducing the amplitude of frequencies higher than some threshold)
-+ a Gaussian manitains compact support in image and frequency space &rarr; appropriste low-band pass filter
++ a Gaussian manitains compact support in image and frequency space &rarr; appropriate low-band pass filter
 
 **Sharpening filter:**
 + linear filter
@@ -255,8 +255,36 @@ Approach: find strong gradients + post process.
 Line fitting - many scenes are composed of straight lines. Problems with line fitting: nopisy edges (which points correspond to which lines), some parts of lines not detected, noisy orientation... We use line fitting by voting for parameters with Hough transform. For eache dge point, compute parameters of all possible lines passing through it, and for each set of parameters cast a vote. Then select the lines that recieve enough votes.
 
 **Hough space:**
++ a line in image corresponds to a point in Hough space
++ for a point $(x,y)$, find all $(m,b)$ for which holds $y=mx+b$
++ a point in image space corresponds to a line in Hough space &rarr; if 2 lines intersect in Hough space at $(m_{opt}, b_{opt})$, then they lie on the same line $y = m_{opt}x + b_{opt}$ in the image space
++ issue with Cartesian $(m,b)$: we get infinite values for vertical lines &rarr; we use a sinusoid in Hough space to represent a point in the image: $x\cos\theta -y\sin\theta = d$
+
+**Hough transform:**
+1. initialize $H[d,\theta]=0$ (*accumulator array*)
+2. for each edge point $(x,y)$ in image:
+    &nbsp;&nbsp;&nbsp;&nbsp; for  $\theta=0$ to $180$ do:
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$d=x\cos\theta -y\sin\theta$
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$H[d,\theta]+=1$
+3. find local maxima $\{ d^{i}_{\text{opt}}, \theta^{i}_{\text{opt}} \}_{i=1}^{N}$ in accumulator array $H$
+4. detected line is defined by $d^{i}_{\text{opt}} = x \cos \theta^{i}_{\text{opt}} - \sin \theta^{i}_{\text{opt}}$
+
+Problem with noise in Hough transform: random points still form some local maxima in the accumulator array. The solution is that instead of checking each theta, we use gradient direction at $(x,y)$ as $\theta$. And instead of assigning the same vote for everyone, we use magnitude: $H(d,\theta) += m(x,y)$.
+
+We can also use Hough transform for circles, where we draw a circle with a predifined radius in Hough space for every point in image space. The intersection of the circles in Hough space corresponds to the center of the circle in image space. For an unknown radius, we need a 3D Hough space, where we map cones.
+
+**Generalized Hough transform (GHT) for shape-based models:**
++ define the shape model by edge points and a reference point
++ model learning: for each edge point use its gradient orientation $\theta$ to index into the table and use the displacement vectors $\vec{r}$ to cast a vote for the center
+
+Advices for Hough transform: minimize irrelevant responses, appropriately discretize the parametric space, vote for neighboring cells as well (cast a vote with a Gaussian), use gradient direction
+
+**Pros:** each point processed independently (robustness, parallelizable), robustness to noise, can detect multiple instances of a single model in one pass.
+**Cons:** time complexity increases exponentially with number of free parameters, some shapes may generate false local maxima, choosing the accumulator cell size is application dependent.
 
 # Fitting parametric models
+
+
 
 # Local features
 

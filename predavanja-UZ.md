@@ -213,6 +213,49 @@ If we want to compare images by their descriptors - histograms, we have to measu
 
 # Edge detection
 
+Goal is to map an image from 2D grayscale intensity pixel array into a set of binary curves and lines.
+
+Anything that appears as an edge, constitutes an edge &rarr; local texture, shape changes, discontinuity of depth, shadows... Edge presence is strongly correlated with the local intensity changes &rarr; **derivative** measures a local intensity change.
+
+#### Image derivatives
+
++ horizontal derivative: $[-1,1]$
++ vertical derivative: $[-1,1]^T$
++ gradient $\Delta f = [\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}]$ &rarr; points in direction of greatest intensity change
++ smooth the image and then search for edges (remove the noise) &rarr; maxima of $\frac{\partial}{\partial x}(I * G) = I * (\frac{\partial}{\partial x}G)$
++ $\sigma$ is the scale/width of a Gaussian kernel, that determines the extent of smoothing &rarr; which edges will be removed
+    + large kernel: detect edges on a larger scale
+    + small kernel: detect edges on a smaller scale
+
+#### From derivatives to edge detection
+
+Approach: find strong gradients + post process.
+
+**Optimal edge detector:**
++ good detection: minimizes probability of false positives (edges caused by noise) and false negatives (missing true edges)
++ good localization: detected edges are close to the location of the true edges
++ specificity: returns only a single point per true edge (minimize number of local maxima around true edge)
+
+**Canny edge detector:**
++ most popular
++ a step function + Gaussian noise
++ first derivative of a Gaussian well approximates an operator that optimizes a tradeoff between signal-to-noise ratio and localization on the specified theoretical edge model
++ method:
+    + filter (convolve) image by a derivative of Gaussian (smooth and enhance)
+    + calculate the gradient magnitude and orientation
+    + thin potential edges to a single pixel thickness &rarr; **non-maxima suppression**
+        + for each pizel check, if it's a local maximum along its gradient direction
+        + only local maxima remain
+    + select sequences of connected pixels, that are likely an edge &rarr; **hysteresis thresholding**
+        + apply 2 thresholds
+        + start tracing a line only at pixels above $k_{high}$ and continue tracing if pixel exceed $k_{low}$
+
+#### Edge detection by parametric models
+
+Line fitting - many scenes are composed of straight lines. Problems with line fitting: nopisy edges (which points correspond to which lines), some parts of lines not detected, noisy orientation... We use line fitting by voting for parameters with Hough transform. For eache dge point, compute parameters of all possible lines passing through it, and for each set of parameters cast a vote. Then select the lines that recieve enough votes.
+
+**Hough space:**
+
 # Fitting parametric models
 
 # Local features

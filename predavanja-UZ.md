@@ -124,6 +124,93 @@ Goalis to find seperate connected regions. Connectivity determinsed which pixels
 
 We can describe an area by perimeter, compactness, centroid... **Ideal descriptor** maps two images of the same object close-by in feature space, and two images of different objects to points far between each other.
 
+## Image processing 2
+
+#### Filtering
+
++ noise reduction, image restoration
++ structure extraction/enhancement
++ **Gaussian noise:** the intensity variation sampled from a normal distribution
++ **Salt and pepper noise:** random black and white descriptors
++ **Impulse noise:** random occurrence of white dots
+
+**Gaussian filter:**
++ Gaussian noise = the intensity variation sampled from a normal distribution
++ assumptions: pixels are similar to their neighboring pixels, the noise is independent among pixels
++ remove the noise by computing an averafe of pixel intensities in a pixel's immediate neighborhood
+
+**Correlation filtering:**
++ replace image intensity with a weighted sum of a window centered at that pixel
++ the weights in the linear combination are prescribed by the filter's kernel
+
+**Convolution filtering:** 
++ flip the filter in both dimensions, apply cross-correlation
++ shift invariant
++ linear
++ commutative ($f * g = g * f$), associative ($(f*g)*h = f*(g*h)$) &rarr; applicatiuon of multiple filters is equal to aplication of a single filter, identity (unit impulse), derivative
++ for a symmetric filter, correlation = convolution
+
+**Boundary conditions:**
++ kernel exceeds image boundaries at thye edge
++ crop, bend image, replicate edges, mirror image
+
+**Gaussian kernel:**
++ instead of using uniform weights, pixels closer to the center should have higher weight
++ variance determines the extent of smoothing
++ half size of kernel $= 3\sigma$
+
+**Convolution and spectrum:**
++ convolution of 2 functions in image space is equivalent to the product of their corresponding Fourier transforms &rarr;
+ $F(f*g) = F(f) \odot F(g)$
+ + convolution manipulates image spectrum (enhances/suppresses frequency bands)
++ Fourier transform = a signal is represented as a sum of sines/cosines of various frequencies
+
+**Removing noise:**
++ noise = adding high frequencies &rarr; to remove them we apply a low-band pass filter (allows low-frequency signals to pass through while reducing the amplitude of frequencies higher than some threshold)
++ a Gaussian manitains compact support in image and frequency space &rarr; appropriste low-band pass filter
+
+**Sharpening filter:**
++ linear filter
++ enhances differences by local averaging
+
+**Filtering as template matching:**
++ apply correlation with template &rarr; dot product = measure of similarity
++ correlation map
++ issue with scaling &rarr; instead of scaling the template, we scale the image
+
+**Reducing an image:**
++ we can't remove every second... pixel &rarr; aliasing (distortion of the signal, because it's not sampled accurately)
++ Nyquist theorem: if we want to reconstruct all frequencies up to $f$, we have to sample the signal by at lease a frequency, equal to $2f$
++ solution: remove the high frequencies that cannot be reconstructed by blurring, then subsample &rarr; Gaussian pyramid
++ reason fo size reduction: Gaussian is a low-band pass filter, so we gerte a redundant representation of the smoothed image &rarr; no need to store it in full resolution
+
+**Median filter:**
++ nonlinear filter
++ replace the pixel intensity by a median of intensities within a small patch
++ doesn't add new gray-levels into the image, removes outliers &rarr; good for impulse and salt&pepper noise removal
+
+#### Color
+
+Light:
++ EM radiaton composed of several frequencies
++ properties described by its spectrum (how much of each frequency is present)
+
+Human color perception:
++ cones &rarr; cells that react differently to different wavelenghts (RGB)
++ rods &rarr; for intensity
+
+**Additive mixture model:** RGB colors added to black (white in the middle), monitors, projectors
+**Subtractive model:** cyann, yellow, violet pigment added to white paper (black in the middle) &rarr; pigments remove color, printers, photographic film
+
+Color space is a unique color specification (for reproduction), a new color is a weighted sum of primaries. In uniform color space, the perceptual differences between colors are uniform across the entire space.
+
+#### Color description by using histograms
+
+Image histogram records the frequency of intensity levels. In a color histogram, each pixel is a point in 3D space (RGB), where $H(R,G,B)=$ number of pixels with color $[R,G,B]$. It's a robust representation of images.
+Intensity is contained in each color channel. Multiplying a color by a scalar changes the intensity, not the hue. So we can normalize a color by its intensity: $I = R+ G+B$, $r = \frac{R}{I}$, $r+g+b=1$.
+
+If we want to compare images by their descriptors - histograms, we have to measure a distance between histograms. We can do that with: Euclidean distance (differences in histogram cells), pdf similarity (2 probability density functions - Chi-squared, Hellinger...).
+
 # Edge detection
 
 # Fitting parametric models

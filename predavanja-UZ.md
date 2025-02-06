@@ -463,6 +463,280 @@ For comparing regions &rarr; **normalize** - rescale to a predefined size.
 
 # Camera geometry
 
+We require a model of 3D-to-2D transform to measure the 3D content.
+
+Single-view geometry:
++ points in a 3D coordinate system project to image plane into 2D pixels
++ project decomposed into 2 kinds:
+    + **extrisic projection** = 3D world &rarr; 3D camera
+    + **intrinsic projection** = 3D camera &rarr; 2D image
+
+### Intrinsic projection
+
+Image formation process:
++ poiny written in camera 3D coordinate system (meters)
++ projected to camera image plane (meters)
++ projected to discretized image (pixels)
+
+We use **homogeneous coordinates** - where we change Cartesian form $[x,y]^T$ and turn it into $[x,y,1]^T$. We do that, because multiplying by a scalar no longer changes the point. If we want to turn it back to Euclidean, we simply divide by last coordinate.
+
+**Camera coordinate system (meters):**
+<table style="border-collapse: collapse; border: none;">
+<tr>
+<td valign="top" width="50%" style="border: none;">
+
++ principal axis $Z$: a line from camera center, perpendicular to image plane
++ principal point $p$: a point where the principal axis punctures the image plane
++ normalized coordinate system: 2D system with origin at $p$
++ projection as vector-matrix multiplication, qhwew $\vec{x}$ is in 2D image space and $X$ is in 3D camera:
+$$\vec{x} = P_0X$$
+$$\left[ \begin{array}{c}
+fX \\
+fY \\
+Z \\
+\end{array} \right]
+=
+\left[ \begin{array}{ccc}
+f &   &   & 0 \\
+ & f & & 0 \\
+ &  & 1 & 0\\
+\end{array} \right]
+\left[ \begin{array}{c}
+X \\
+Y \\
+Z \\
+1 \\
+\end{array} \right]
+$$
+
+</td>
+<td valign="top" width="50%" style="border: none;">
+
+![Optional Text](uz-slike/kamera.png)
+<!-- Replace `URL_to_Image` with the actual URL of your image -->
+![Optional Text](uz-slike/kameraside.png)
+</td>
+</tr>
+</table>
+
+**From image plane to image pixels:**
+<table style="border-collapse: collapse; border: none;">
+<tr>
+<td valign="top" width="50%" style="border: none;">
+
++ normalized camera coordinate system: origin in principal point $p = [p_x,p_y]^T$
++ image coordinate system: origin in th corner of the image sensor
++ we need to change the coordinate system origin by the principal point $p$:
+$$\left[ \begin{array}{c}
+fX + Zp_x \\
+fY + Zp_y \\
+Z \\
+\end{array} \right]
+=
+\left[ \begin{array}{ccc}
+f &   &  p_x & 0 \\
+ & f & p_y & 0 \\
+ &  & 1 & 0\\
+\end{array} \right]
+\left[ \begin{array}{c}
+X \\
+Y \\
+Z \\
+1 \\
+\end{array} \right]
+$$
+
+</td>
+<td valign="top" width="50%" style="border: none;">
+
+![Optional Text](uz-slike/nevem.png)
+
+</td>
+</tr>
+</table>
+
++ we project onto a sensor of size $W_S \times H_S$ (in meters)
++ pixels a rearranged into a rectangular $M_x \times M_y$ pixel matrix, where $m_x = \frac{M_x}{W_S}$
++ we then project it with matrix multiplication:
+$$
+\left[ \begin{array}{c}
+x \\
+y \\
+z \\
+\end{array} \right]
+=
+\left[ \begin{array}{ccc}
+m_x & 0 & 0 \\
+0 & m_y & 0 \\
+0 & 0 & 1 \\
+\end{array} \right]
+\left[ \begin{array}{ccc}
+f & 0 & p_x & 0 \\
+0 & f & p_y & 0\\
+0 & 0 & 1 & 0\\
+\end{array} \right]
+\left[ \begin{array}{c}
+X \\
+Y \\
+Z \\
+1 \\
+\end{array} \right]
+$$
++ generally, it's hard to guarantee a rectangular sensor &rarr; $s$ is for skewed:
+$$
+\left[ \begin{array}{c}
+x \\
+y \\
+z \\
+\end{array} \right]
+=
+\left[ \begin{array}{cccc}
+\alpha_x & s & x_0 & 0 \\
+0 & \alpha_y & y_0 & 0 \\
+0 & 0 & 1 & 0 \\
+\end{array} \right]
+\left[ \begin{array}{c}
+X \\
+Y \\
+Z \\
+1 \\
+\end{array} \right]
+$$
+
+**Calibration matrix** $K$ prescribes projection of 3D point in camera coordinate system into pixels:
+$$
+K = \left[ \begin{array}{ccc}
+\alpha_x & s & x_0 \\
+0 & \alpha_y & y_0 \\
+0 & 0 & 1 \\
+\end{array} \right]
+$$
++ $\alpha_x, \alpha_y =$ focal length of camera in terms of pixels along x and y-axis
++ $s = $ skew coefficient between the x and y axes (ideally 0)
++ $x_0,y_0 =$ coordinates of the principal point $p$ (ideally the intersection point of the optical axis of the lens with the image plane) - they represent the offset from the top-left corner of the image sensor (in pixels)
+
+### Extrinstic projection
+
+The 3D camera coordinate system is related to 3D world by a rotation matrix $R$ and translation $\tilde{C}$:
+<table style="border-collapse: collapse; border: none;">
+<tr>
+<td valign="top" width="50%" style="border: none;">
+
++ $R = $ how to rotate the world CS around its own origin to align it with camera CS
++ $\tilde{C}=$ camera origin in world CS
++ $\tilde{X}=$ point in 3D world CS
++ $\tilde{X}_{cam}=$ some point $\tilde{X}$ written in 3D camera CS
+
+**World to camers CS transformation:**
+$$\tilde{X}_{cam} = R(\tilde{X} - \tilde{C})$$
+$$\mathbf{X}_{\text{cam}} = \left[ \begin{array}{cc} R & -R \tilde{C} \\ 0 & 1 \end{array} \right] X$$
+
+&nbsp;
+
+We have camera parameters specified by a calibration matrix $K$, the projection center in world CS $\tilde{C}$ and the rotation matrix $R$. A 3D point in the homogeneous world coordinates $X$ is projected into pixels $x$ by:
+$$x = PX$$
+where the projection matrix $P = K \left[ R | -R\tilde{C} \right]$
+
+</td>
+<td valign="top" width="50%" style="border: none;">
+
+![Optional Text](uz-slike/ekstrin.png)
+![Optional Text](uz-slike/ekstr2.png)
+
+</td>
+</tr>
+</table>
+
+### Lenses and nonlinearity
+
+Lens adds a nasty nonlinearity. Straight lines are no longer straight, which is why we must remove nonlinearity to apply a pinhole model.
+
+We assume that lens distortion is radially symmrytic and so we radially expand an image to un-distort it. Int his transformation, we only change the radius of the transformed point, whereas the angle stays the same.
+
+For transformation, we typically use a low degree polynomial and we estimate the parameters by adjusting them until straight lines become straight.
+
+### Degrees of Freedom (DoF)
+
+Degrees of freedom refer to the number of independent parameters, required to fully drescribe the camera's configuration and behaviour. Each DoF corresponds to an independent variable.
+
+**Intrinsic parameters &rarr; 5 DoF:**
++ principal point coordinates (2)
++ focal length (1)
++ pixel scaling factor (1)
++ shear - nonrectangular sensor array (1)
++ radial distortion
+
+**Extrinsic parameters &rarr; 6 DoF:**
++ rotation (3)
++ translation (3)
+
+**Camera projection matrix:**
++ pinhole camera: 9 DoF (*principal point coordinates, focal length, rotation, translation*)
++ camera with rectangular pixels: 10 DoF (*we get 2 seperate focal lengths*)
++ general camera (skewed sensor): 11 DoF (*+ shear*)
+
+### Homography
+
+Homography is a plane-to-plane projection. The elements of a homography matrix $H$ can be estimated by applying a direct linear transform.
+
+**Homography estimation** is a process of computing a homography matrix $H$, that maps points from one plane to another. 
+**Homography matrix** is a $3\times 3$ matrix that relates 2 planar projections of the same scene. 
+\[
+H =
+\begin{bmatrix}
+h_{11} & h_{12} & h_{13} \\
+h_{21} & h_{22} & h_{23} \\
+h_{31} & h_{32} & h_{33}
+\end{bmatrix}
+\]
+
+We can assume:
+\[
+\begin{bmatrix}
+x' \\
+y' \\
+1
+\end{bmatrix}
+\simeq
+H
+\begin{bmatrix}
+x \\
+y \\
+1
+\end{bmatrix}
+\]
+
+By setting \( h_{33} = 1 \), the equations simplify to:
+
+\[
+x' = \frac{h_{11} x + h_{12} y + h_{13}}{h_{31} x + h_{32} y + 1}
+\]
+\[
+y' = \frac{h_{21} x + h_{22} y + h_{23}}{h_{31} x + h_{32} y + 1}
+\]
+
+We can also use **preconditioning**. DLT works well, if the corresponding points are normalized seperately in each view: $\tilde{x} = T_{pre}x$, where we choose $T_{pre}$ such that the mean of points $\tilde{x}_i$ is 0 and their variance 1.
+
+**Homography estimation algorithm:**
+1. apply preconditioning to points in each image seperately:&nbsp; $\tilde{x}' = T_{\text{pre}}' x'$, &nbsp; $\tilde{x} = T_{\text{pre}} x$
+2. apply DLT to estimate homography: &nbsp; $\tilde{x}'=\tilde{H}\tilde{x}$
+3. transform back the solution to remove preconditioning:&nbsp; $H = T_{\text{pre}}'^{-1} \tilde{H} T_{\text{pre}}$
+
+### Vanishing points
+
+Sets of 3d parallel lines intersect at a vanishing point. Where in image do sets of 3D parallel lines projections intersect? As we push a point towards infinity away from the camera, the projection approaches the vanishing point $v$.
+
+Vanishing point depends on direction, not on point. A different set of parallel lines correspond to a different VP. **Horizon** is formed by connecting the vanishing points of a plane. Therefore horizon is a collection of all the vanishing points.
+
+### Camera calibration
+
+Assume a fixed camera in 3D that we want to use for measuring: $\lambda x = PX$.
+
+Camera calibration is the process of determining the intrinsic and extrinsic parameters of a camera. These parameters describe how the camera projects 3D points in the real world onto a 2D image plane. The goal is to estimate the camera projection matrix $P$, which encapsulates both the intrinsic and extrinsic properties of the camera. We have a known calibration object (grid) and we use it to estimate $P$.
+
+Proper calibration requires measuring points at sub-pixel accuracy and highly depends on the calibration pattern. For 11 parameters in $P$, we need to use at least 28 points.
+Each 2D &rarr; 3D correpsondence provides 2 linearly independent equations. Since $P$ has 11 DoF and each correspondence provides 2 equations, we need at least 6 correspondences to solve the system. If all the 3D points used for calibration lie on a single plane, the system becomes degenerate &rarr; the object should have non-coplanar points.
+
 # Multiple-view geometry
 
 # Recognition & Detecion

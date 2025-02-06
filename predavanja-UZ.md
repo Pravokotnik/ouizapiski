@@ -284,7 +284,74 @@ Advices for Hough transform: minimize irrelevant responses, appropriately discre
 
 # Fitting parametric models
 
++ transformation: $X'_i = f(X_i;\vec{p})$
++ $X_i = [x_i, y_i]^T$
++ $\vec{p}=[p_1,...,p_m]$
 
+Use cases:
++ given a set of correspondences, what are the parameters of the transformation?
++ assuming the transformation can be well approximated by $f(x;p)$, what are the best parameter values for $p$? &rarr; those that minimize the projection error
++ used for mapping 2D into 3D
+
+### Least squares: Line fitting
+
+**Least squares:**
++ data: $\{(x_1,y_1),...,(x_N,y_N)\}$
++ line equation: $y=f(x;p)=xp_1+p_2$
++ projection error at i-th correspondence: $\varepsilon_i=f(x_i;p)-y_i$
++ cost function: $E(p)=\sum_{i=1}^N\varepsilon_i^2$
++ best parameters: $\hat{p} = \argmin_p E(p)$
+
+**Minimizing least squares:** $p=A^\dagger b$
+
+**Weighted least squares:**
++ weighted cost function: $E(p)=\sum_{i=1}^N w_i \varepsilon_i^2$
++ can be used for nonlinear/robust least squares
+
+**Minimizing weighted least squares:** $p=(A^TWA)^{-1}A^TWb$
+
+**Constrained least squares:**
++ cost function: $E(p)=\sum_{i=1}^N  ||\varepsilon_i||^2$
++ trivial solution is $p=0$, nontrivial solution is obtained by constraint $||p||^2=1$
+
+**Minimizing constrained least squares:**
++ $A^TAp=\lambda p$
++ the solution is the eigenvector of $(A^TA)$, corresponding to the smallest eigenvalue, which is the eigenvector, corresponding to the smallest eigenvalue of $A$
++ SVD decomposition
+
+We often use **nonlinear error/cost functions**, which cannot be minimized analytically in a closed form. Then we use gradient descend, Newton method, Gauss-Newton method...
+
+### Outliers, RANSAC
+
+Large disagreements in only a few points - outliers, cause falioure of the least squares based methods. The direction, localization and recognition have to operate in significantly noisy data. In some cases, more than a half of data is expected to be outliers. Standard models for robust estimation can rarely deal with such large proportion of outliers.
+
+RANSAC - random sample consensus algorithm is very popular due to its generality and simplicity. It can deal with large portions of outliers. We find a model with strong support by randomly sampling potential models.
+
+If we want to fit a line to points, we randomly sample 2 points and connect a line through them. Then we count the number of inliers - all points whose $\varepsilon_i$ is lower than some threshold. We repeat that over $N$ iterations, or until the number of inliers becomes big enough.
+
+**RANSAC algorithm:**
+1. randomly select the smallest group of correspondences, from which we can estimate the parameters of our model
+2. fit a parametric model $\hat{p}$ to the selected correspondences
+3. project all other points and count the number of inliers
+
+The model parameters $\hat{p}_{opt}$ maximize the number of inliers.
+
+**The choice of parameters:**
++ how many correspondences? as many as the model parameters
++ threshold? choose $t$ such that the probability that an inlier falls below $t$ is $p_w$, usually $p_w=0.95$, if we have a Gaussian: $t=2\sigma$
++ number of iterations? choose $N$ such that the probability $p$ of drawing a sample with all inliers at least once is high enough
+    + $e$ = proportion of outliers (probability of selecting an outlier at random)
+    + probability of choosing a single inlier = $1-e$
+    + we have $s$ correspondences so probability of all-inlier sample = $(1-e)^s$
+    + probability that at least one in $s$ is not an inlier = $[1-(1-e)^s]$
+    + $1-p = [1-(1-e)^s]^N \rightarrow N = \frac{\log(1-p)}{\log(1-(1-e)^s)}$
+
+We can **improve RANSAC** by applying least squares to the inliers. After computing the best inliers, we use least squares to fit a new model to all the inliers. This makes the final model more accurate.
+
+If we have multiple instances of our model (multiple lines for example), we apply voting to RANSAC. If we have multiple models, we apply model selection.
+
+**Pros:** simple, applicable, often used in practice
+**Cons:** requires setting some parameters, potentially a lot of iterations, fails at small number of inliers
 
 # Local features
 

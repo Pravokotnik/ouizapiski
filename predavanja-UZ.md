@@ -355,6 +355,112 @@ If we have multiple instances of our model (multiple lines for example), we appl
 
 # Local features
 
+In panoramic photos, we: detect ket-points in both images, find pairs of corresponding points and use the pairs for image registration.
+
+Efficient keypoint detector requirements:
++ detect the same structure independently in each image (high detection stability)
++ for each point find a corresponding point in the other image
+
+### Keypoint detection
+
+We use corners as keypoints, because they are distinctive and repeatedly occur on the same structure, even if it changes pose in 3D. For that, we need a corner response function (CRF), which would have high value when it detects a corner. A good criteria for CRF is **self similarity**: we observe a small window around a potential corner and a small shift in window in any direction results in large intensity change -
++ flat region: small shift doesn't change intensity
++ edge: no change when shifting along the edge, otherwise there is change
++ corner: shift in any direction significantly changes local intensity
+
+**Harris corner detector:**
++ intensity change for a shift $[u,v]$: $E_R(u, v) = \sum_{x,y \in R} w(x, y) \left( I(x, y) - I(x + u, y + v) \right)^2$
++ the weight function is a Gaussian kernel
++ for small shifts we have to linearize it &rarr; derivatives of the image
++ for small shifts we can approximate it with: $[u,v]M[u,v]^T$m where $M$ is a $2\times 2$ matrix of image derivatives, or more efficiently, $M$ is the covariance matrix of region gradients:
+$$M = \begin{bmatrix}
+G(\sigma) * I_x^2 & G(\sigma) * I_x I_y \\
+G(\sigma) * I_x I_y & G(\sigma) * I_y^2
+\end{bmatrix}$$
++ we detect a corner by analyzing the gradient covariance matrix
++ decompose $M$ (*visualize $M$ as an ellipse*):
+$$M = R \begin{bmatrix}
+\lambda_{\text{max}} & 0 \\
+0 & \lambda_{\text{min}}
+\end{bmatrix} R^T$$
+where eigen values mean ellipse scaling and eigen vectors the ellipse rotation
++ a corner has a strong gradient in both major directions &rarr; corner is present when both eigenvalues are large
++ in practice, we don't calculate eigenvalues, because that's computationally expensive, we just look at their ratio: $\text{det}(M) - \alpha \text{trace}^2(M) > t$
+
+**Harris corner detector algorithm:**
+1. calculate the image derivatives
+2. filter them with the Gaussian
+3. check for corner presence (2 strong eigenvalues)
+4. apply non-maxima suppression
+
+**Hessian corner detector:**
++ determinant of Hessian (Hessian = measure of local curvature)
+$$H(I) = \begin{bmatrix}
+I_{xx} & I_{xy} \\
+I_{xy} & I_{yy}
+\end{bmatrix}$$
+
+CRF is rotation invariant, however it is not invariant to scale change.
+
+### Scale selection
+
+Scale selection is important, because it ensures that keypoints are detected in a way, that is invariant to changes in image scale. A keypoint might look like a corner at one scale, but not at another, which is why scale selection is important.
+
+For each keypoint, we must select the characteristic scale independently. We define a signature function $f(\sigma)$ that reaches maximum at the optimal scale. We then evaluate the function for different scales.
+
+Natural images abundantly containt blob-like features, We want to detect them, because blobs differ in properties compared to its surroundings. We can then use blobs to represent object/features in an image. For that we use **LoG - Laplacian of Gaussian**, which is a circular-symmetric operator for blob detection. The characteristic scale is the scale at which LoG filter yields a maximum response. So we then use the local maxima in scale space of LoG filter as keypoints.
+
+LoG can be well approximated with a difference of Gaussians at different values of $\sigma$: $DoG=G(x,y,k\sigma) - G(x,y,\sigma)$. This is good, because the results of Gaussian filtering are already calculated during calculation of image resizing (Gaussian pyramid): $\sigma_{next} = 2\sigma_{prev}$.
+
+**Lowe's DoG based detector:**
++ find local maxima of DoG in scale space (check 26 neighbors - $8+2*9$)
++ remove low contrast points if local change in response in small compared to neighbors
++ remove points detected at edges (Hessian)
+
+### Local descriptors
+
+Keypoint descriptors must be:
++ distinctive: different for keypoints on different structures
++ invariant to ambiental changes (geometric and photometric transformations)
+
+For comparing regions &rarr; **normalize** - rescale to a predefined size.
+
+**Normalizing rotation:** 
++ need to automatically determine the inherent orientation of every patch, independently of all others
++ algorithm:
+    + calculate the histogram of orientations 
+    + rotate gradients to adjust them to align with a standardized direction
+    + find all orientations whose amplitude is $>80%$ of the strongest bin
+    + output each detected oriented region as seperate keypoint
+
+**Normalizing affine transformation - Affine adaptation:**
++ for very large changes in viewpoint, we require an affine adaptation (invariance to translation, scale and rotation is not enough)
++ iterative algorithm:
+    + in circulat window, calculate gradient covariance matrix
+    + estimate an ellipse from $M$
+    + using new window, calculate the new covariance matrix and iterate
++ basically, we want to transform initial circular regions (detected keypoints) into ellipses, that better align with geometrix distortions present in the image
++ $\Epsilon = USU^T$, where rotation is $U^{-1}$ and scale is $S^{-1/2}$
+
+**SIFT - Scale Invariant Feature Transform:**
+1. split a region around a keypoint into $4\times 4$ sub-regions
+2. calculate gradients on each pizel and smooth over a few neighbors
+3. in each cell, calculate a histogram of gradient orientations (8 directions)
+    + each point contributes with a weight proportional to its gradient magnitude
+    + contributon weighted by a Gaussian centered at region center
+4. stack histograms and normalize &rarr; descriptor with ($4*4*8=$) 128 dimensions
++ robust - 60 degrees out-of.plane rotation, robust to significant intensity changes, fast
+
+**correspondences using keypoints:**
++ compare keypoints by using Euclidean distance
++ keep only symmetric matches (A is a point from left image, B is its match in the right image - if B is most similar to A among all points in the right image and vice-versa, they are a symmetric match)
++ calculate the distance between A and the first and second most similar keypoints in the right image, the ratio will be low for distinctive keypoints and high for non-distinctive ones
+
+**MaSt3r:**
++ image matching in 3D
++ considers keypoints + descriptors + 3D jointly
++ recent
+
 # Camera geometry
 
 # Multiple-view geometry

@@ -891,3 +891,130 @@ An example is laser scanning. Here we do an optical triangulation: project a las
 Multi-band triangulation is when we project multiple bands to speed-up the scanning. Which pixels belong to which band? We assume smooth surface, project color bands...
 
 # Recognition & Detecion
+
+## Classical approaches
+
+We have tagged an object with a bounding box.
+
+#### Recognition by classification
+
+We select the one with minimal distance or the one with sufficiently small distance. The quality of recognition depends on the quality of image representation - features.
+
+How do we determine the features?
+1. linear coordinate systems (linearly transform the data)
+2. feature selection (ML to select optimal features from a pool of transforms)
+3. handcrafted nonlinear transforms (improve feature robustness)
+4. end-to-end learning of feature transform (ML of the entire feature extraction and selection pipeline)
+
+#### Learning natural coordinate systems by subspace methods
+
+**Subspace estimation:**
++ find a low-dimensional linear subspace, such that projection of the data onto the subspace does not result in information loss
++ we are given $N$ $M$-dimensional points (images), we need to find a unit vector $u \in R^M$ such that projection to this vector will minimize the reconstruction error
++ formally: minimize the sub of reconstuction errors = maximize the variance of projected points
+
+**PCA:**
++ want to maximize $var(a) = u^T \Sigma u$
++ variance maximized by $u$ that satisfies $\Sigma u = \lambda u$
++ the maximum of $var(a) = \lambda$ is reached at the largest eigenvalue
++ variance maximized by the eigenvector that corresponds to the largest eigenvalue
++ PCA is essentially a change of CS that captures major directions of variance in the data
+
+**Projection and reconstruction:**
++ projection of data $x_i$ into the new CS: $y_i = U^T(x_i - \mu)$
++ reconstruction back into original CS: $x_i = Uy_i + \mu$
+
+<table style="border-collapse: collapse; border: none;">
+<tr>
+<td valign="top" width="50%" style="border: none;">
+
+**How many eigenvectors for reconstruction?**
++ sum of squared differences $\epsilon (m)$ between training images and their reconstruction is given by:
+$$\epsilon(m) = \sum^N_{j=m+1} \lambda_j$$
+
+</td>
+<td valign="top" width="50%" style="border: none;">
+
+![Optional Text](uz-slike/eigenv.png)
+</td>
+</tr>
+</table>
+
+**Algorithm for building a subspace:**
+1. reshape training images into column vectors
+2. calculate the average image
+3. center data (substract average image)
+4. calculate covariance matrix
+5. calculate eigenvector and eigenvalue matrix (SVD)
+6. construct a matric using only first $K$ eigenvectors
+7. now we can project and reconstruct each test image
+
+We can use dual PCA, when the number of features is much larger than the number of samples. Instead of decomposing the covariance matrix, it works on the Gram matrix, which is the inner product matrix of the data.
+
+**Classification by subspace reconstruction:**
++ if the window contains a category for which the subspace was constructed, the reconstruction will work well, otherwise not
++ if we use a large collection of faces to construct the subspace, only faces will be reconstructed by the subspace &rarr; we can exploit this property for detection/recognition
+
+**Detection by distance from subspace:**
++ use a subspace learned on faces to detect a face
++ slide a window over each image position and calculate the reconstruction error
++ repeat for all scales (normalize)
++ low reconstruction error indicates a face (apply a threshold)
+
+**PCA is a linear autoencoder.**
+
+Even in PCA, the same object viewed under different conditions (light, orientation) projects into different parts of the subspace. We could **generate different appearances** by accessing a specific part of the subspace: $x = Uy + \mu$, where $y$ is a subspace point (vector). For this linear encoders are weak, but neural network encoders are more powerful.
+
+Reconstruction subspace is not optimal for discrimination - if we wanted to figure out whether the person is wearing glasses... How do we come up with featues?
+
+#### Learning features by feature extraction
+
+To achieve real-time processing, feature extraction and classifier application should be fast. To choose the appropriate classifier we can use: nearest neighbors, NNs, SVMs, boosting, conditional random fields...
+
+Classifiers are algorithms, that assign a label to a given input.
+
+**AdaBoost:**
++ task: build a classifier which is a weighted sum of many weak classifiers
++ weak classifiers are fast to compute
++ algorithm:
+    + train a sequence of weak classifiers
+    + each weak classifier splits training examples with at least 50% accuracy
+    + those examples that are incorrectly classified get more weight in the next weak classifier
+    + the final classifier is a combination of the weak ones
++ we get fast classifier application
+
+**Efficient computation - integral images:**
++ filters based on sums of intensities within rectangular regions
++ can be done in constant time for arbitrary large region
++ require precomputing the integral image
++ large collection of filters - account for all possible paaameters (position, scale...)
++ we extract feaures at each bounding box and apply AdaBoost classifier &rarr; computationally expensive
++ efficiently &rarr; **cascade of classifiers**:
+    + apply first few classifiers (fast) to reject the windows that don't contain the category
+    + reclassify the surviving regions
+    + chain classifiers from least complex to the most complex
+
+**Viola-Jones face detector:** training using positives and a lot of negatives, real-time detectors.
+
+In general, we need much stronger features. We need to account for intra-class vaariation (contrast, illumination) and destinguish between different classes.
+
+How to come up with features? Handcraftet nonlinear transforms
+
+#### Handcrafter nonlinear transforms
+
+Problem: color/gray-level representation is sensitive to illumination changes or whitin-class color variations.
+
+We use **HOG**: histogram od gradient orientations. Orientations are weighted by magnitude. We extract HOGs from perosn/background and train a person/nonperson classifier in a linear SVM. We can use that in pedestrian detection: use a sliding window, extract HOG and classify by linear SVM.
+
+Issues with sliding window object detection:
++ strengths: simple implementation, can deal with scale changes
++ weaknesses: adding aspect change (different W-H ratio) increases the number of bounding boxes to test, feature construction for eaach box increases computational complexity
+
+To fix that, we can generate a small number of hypothesized object bounding boxes and apply a slowe classifier to verify them.
+
+**Selective search:**
++ images are intrinsically hierarchical &rarr; start by over-segmentation into small regions
++ merge 2 most similar regions based on teexture similarity and region size
++ continue until a single region remains
++ from each merged region generate a bounding box
++ high recall, object-category sgnostic, basis for newer computationallty-heavy detectors

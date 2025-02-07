@@ -739,4 +739,155 @@ Each 2D &rarr; 3D correpsondence provides 2 linearly independent equations. Sinc
 
 # Multiple-view geometry
 
+The depth of a point cannot be calculated from a single 2D image without a scene model/prior information. That happens, because all points along a ray that passes through a camera center are projected into the same point in the image plane. Therefore it's impossible to calculate a 3D point from a single 2D point.
+
+### Stereo geometry and scene reconstruction
+
+<table style="border-collapse: collapse; border: none;">
+<tr>
+<td valign="top" width="50%" style="border: none;">
+
+We estimate depth by **triangulation**. Reconstruction is calculated by intersection of 2 rays. We assume that we have a known camera position in 3D (calibration) and we have a known correspondence between points.
+
+With a linear approach, we can just write a homogeneous system and solve it. If we want to refine it for nonlinear, we need to find $X$ that minimizes a sum of reprojection errors. This requires an iterative algorithm and gives the most accurate solution.
+
+&nbsp;
+
+Generally, correspondences are unknown in advance. We do know the location of the right camera with respect to the left one. So given a point $p$ in the left image, we have to constrain the search region of the corresponding point in the right image. Potential matches for $p$ lie on the corresponding epipolar line $l'$.
+
+</td>
+<td valign="top" width="50%" style="border: none;">
+
+![Optional Text](uz-slike/triangulacija.png)
+![Optional Text](uz-slike/epipcal.png)
+</td>
+</tr>
+</table>
+
+
+<table style="border-collapse: collapse; border: none;">
+<tr>
+<td valign="top" width="50%" style="border: none;">
+
+**Epipolar constraint:**
++ given a point $x$ in the left image, what is the equation of the epipolar pine in the right image?
+    &nbsp;
+
+In a **calibrated system**, points are defined as $p = \lambda_i X$, where $\lambda_i$ is a scalar. We have the equation $p^TEp'=0$, where $E$ is an essential matrix $E = \left[ T_{\times} \right]R$ that relates corresponding image points.
+
+A 3D point is mapped to points $p$ and $p'$. The epipolar line for the left camera is $l = Ep'$, and for the right camera $l' = (p^TE)^T$.
+
+</td>
+<td valign="top" width="50%" style="border: none;">
+
+![Optional Text](uz-slike/calib.png)
+</td>
+</tr>
+</table>
+
+In a **noncalibrated system**, we must convert the points from meters to pixels. We get a system $\hat{x}^T F \hat{x}' = 0$, where $\hat{x}$ is in image pixels, and it holds $\hat{x} = Kx$. $F$ is fundamental matrix $F=K^{-1}EK'^{-1}$. 
+So the epipolar line $l = F'x'$ corresponds to $x'$.
+
+**Epipolar geometry - definitions:**
++ baseline = a line connecting camera centers
++ epipole = point where the baseline punctures the image plane
++ epipolar plane = plane connecting 2 epipoles at a 3D point
++ epipolar line = intersection of epipolar plane and image plane (*all epipolar lines of a single image intersect at the camera epipole*)
+
+### Geometry of a simple stereo
+
+<table style="border-collapse: collapse; border: none;">
+<tr>
+<td valign="top" width="50%" style="border: none;">
+
+We have a calibrated stereo system with parallel optical axes. This simplifies a problem. So given $[x,y]$ in the left image, where will the corresponding $[x',y']$ be in the right image.
+
+System:
++ parallel optical axes with aligned image lines
++ a 3D point written in coordinate system of the left camera $^LP$
++ baseline $b_x$ = displacement of the right camera along $x_L$
++ focal length $f$ = distance of image planes in both cameras from their projection centers
+
+The corresponding points lie on the same line of pixels - epipolar line. We then align the right projection onto the left image - displacement by $-b_x$.
+
+3D coordinates from disparity: 
++ depth: $Z = f\frac{b_x}{d}$
++ $X = x_L\frac{b_x}{d}$
++ $Y = y_L\frac{b_x}{d}$
+
+</td>
+<td valign="top" width="50%" style="border: none;">
+
+![Optional Text](uz-slike/simplestereo.png)
+</td>
+</tr>
+</table>
+
+**Stereo image rectification:**
++ simplifies the matching of corresponding points between 2 images from different viewpoints
++ convenient if the lines for searching the matches correspond to the epipolar lines
++ reproject image planes into a common planem parallel to baseline
++ 2 homography matrices for reprojection of left and right image planes
+
+**Disparity:**
++ difference in the positions of corresponding points in 2 stereo images
++ relates the right image to the left
++ coordinate of the corresponding point in the right image $= x$ coorinate of the point in the left camera $+$ disparity value at that point
++ estimation problem: for each pixel in the left image, we need to find the corresponding pixel in the right image (disparity = difference in $x$)
+
+**Disparity estimation:**
++ for a patch centered at a pixel in the left image, compare to all patches in the right image along the same epipolar line
++ select the patch with the greatest similarity
++ difference in position of left patch and right patch is the disparity
++ the influence of window size $W$:
+    + small $W$: details better estimated, noise disparity, faster
+    + large $W$: details lost, (over)smoothnes, slower
++ optimize by using global disparity (independently at each pixel)
++ constraints: points on single surface appear in same order, slow local depth change
++ semi global block matching (?)
+
+**Application:** filling-in the previously occluded scene regions for better realism...
+
+### Reconstruction from multiple images
+
+Given several images of the same scene, we need to reconstruct all camera positions and the 3D scene. We assume a partially calibrated case, in which $K$ is known.
+
+**Steps:**
+1. find keypoints
+2. find good matches
+3. calculate $F$
+4. calculate $E$
+5. $\left[R|t\right]$
+6. triangulation
+
+**3D reconstruction pipeline:**
++ trangulation requires: knowing correspondences and the projection matrices $P_j$ for all $M$ cameras
++ compute $P_j$ from $K_j, R_j, t_j$
++ compute $R_j, t_j$ from $E_j$
++ compute $E_j$ from $F_j, K_1, K_j$
+
+**Fundamental matrix estimation:**
++ we estimate $F$ that minimizes reprojection errors
++ 8 point algoritm - we get one equation per correspondence, so we need 8 correspondence
++ normalized 8 point algorithm:
+1. center image points and scale
+2. calculate $F$ with 8 point algorithm
+3. enforce rank$=2$
+4. transform $F$ back to its original units
+
+Generally, correspondances are unknown. So we have to find keypoints in each image, calculate possible matches and estimate the epipolar geometry with RANSAC.
+
+**RANSAC to robustly estimate $F$:**
+1. randomly select a set of 8 correspondences
+2. calculate $F$ using them
+3. estimate how many of them support $F$
+4. choose $F$ with maximal number of inliers
+
+### Active stereo
+
+The idea is to project structured light patterns over the object, This simplifies the correspondence problem and we can only use a single camera.
+An example is laser scanning. Here we do an optical triangulation: project a laser light plane, move over an object and precicely scan it.
+
+Multi-band triangulation is when we project multiple bands to speed-up the scanning. Which pixels belong to which band? We assume smooth surface, project color bands...
+
 # Recognition & Detecion

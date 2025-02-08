@@ -1037,5 +1037,60 @@ So far, we considered classifying the entire image, but many applications requir
 
 **Box regression** is where region proposal generates approximate bounding box and the box regressor defines it. 
 
+#### RCNN
+![Optional Text](uz-slike/rcnn.png)
 **RCNN** is a region based CNN. The slow version is consisted of region proposal, feature extraction, classification and bounding box regression. It is slow because each of the region proposals is processed independently by the CNN. We can improve it by sharing computations. **Fast RCNN** is consisted of feature extraction, region proposal which generates candidate regions ROIs, ROI pooling, classification and boundin box regression. The problem with fast RCNN is that region proposals have very poor recall and can be slow. We fix this with **faster RCNN**, which consists of feature extraction, region proposal network RPN, ROI pooling, classification and bounding box regression. RPN is a small neural network that slides over the feature map and predicts region proposals and objectness scores. It uses anchor boxes to generate proposals. We can extend faster RCNN with **mask RCNN**, which adds a brach for predicting segmentation masks on each ROI, which allows the network to perform both object detection and instance segmentation at the same time.
 
+## Recognition using local features: Bag of words model
+
+We want texture recognition. Texture is spatially organized repeatable images and can be characterized in terms of textons (small images).
+
+The Bag of Words model represents an image as an unordered collection of visual features, ignoring spatial relationships and structure. It focuses on the frequency of these visual features, treating each image as a "bag" of its constituent visual elements.
+
+It summarizes an image by a distributon (histogram) over visual words. But how do we identify the words?
+
+![Optional Text](uz-slike/bow.png)
+
+**1. Feature detection and representation:**
++ use feature point detectors (SIFT)
++ normalize each region to remove local geometric deformation
++ collect descriptors from all key-points from all training images
+
+**2. Clustering by vector quantization:**
++ SIFTs correcponding to the same visual word should be similar &rarr; similar SIFTs form clusters
++ apply K-means clustering to the detected SIFT descriptors
++ each cluster center is a visual word &rarr; keep only cluster centers
++ learn on seperate training data
++ for each detected keypoint, assign the word ID closest to the extracted SIFT
+
+**3. Image representation:**
++ each image represented by a histogram, which is then normalized
+
+**4. Build a classifier:**
++ use the training set
++ classifier needs to classify images based on the extracted bag of word histogram
++ SVM (extract BOWs and train a classifier)
+
+**5. Reconition:**
++ how to classify a new image?
++ encode the image with the dictionary learned in the training stage
++ feed to a classifier trained at training stage
+
+BOW performs very well in image classification despite the background clutter. Strengths are that it has a fixed descriptor length and is robust to object position and orientation. Weaknesses are that it doesn't account for spatial relations among visual words and it doesn't localize objects in the image.
+
+## Object detection by feature constellations
+
+How to detect an object in arbitrary pose and estimate that pose?
+
+We represent the target model in terms of small parts that can be detected even after an affine deformation - keypoints. Then we verify the consistency of geometric configurations.
+
+We could detect by **fitting an affine deformation**. We use an affine model to approximate perspective transform of planar objects and apply RANSAC to get a globally valid correspondence.
+
+We can use **Generalized Hough Transform**:
++ assume features are invariant to scale and rotation
++ each feature casts a vote into the Hough space
+1. Index descriptors (we need distinctive descriptors to reduce the search space
+2. Apply GHT to obtain approximate detection
+3. Refine each detection by fitting affine transform between the points on the object and the detected points from GHT
+
+We can apply this to retrieval systems, specific object recognition (highway vignette verification), augmented reality...

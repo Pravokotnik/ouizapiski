@@ -1000,7 +1000,7 @@ In general, we need much stronger features. We need to account for intra-class v
 
 How to come up with features? Handcraftet nonlinear transforms
 
-#### Handcrafter nonlinear transforms
+#### Handcrafted nonlinear transforms
 
 Problem: color/gray-level representation is sensitive to illumination changes or whitin-class color variations.
 
@@ -1018,3 +1018,24 @@ To fix that, we can generate a small number of hypothesized object bounding boxe
 + continue until a single region remains
 + from each merged region generate a bounding box
 + high recall, object-category sgnostic, basis for newer computationallty-heavy detectors
+
+## A modern approach
+
+#### End-to-end feature (and classifier) learning
+
+We train a neural network - for an input image we predict the probability of some output. We use gradient descent for adjusting the weights.
+
+**Convolutional NNS** &rarr; goal is to gradually decrease spatial size ($W \times H$) and increase the depth. The basic building blocks:
++ convolutional layer (convolute)
++ nonlinear layer - RELU: implement nonlinear feature transformations, we need specific form for backpropagation to work
++ pooling layer: implements downsamppling (reduce spatial resolution, increase receptive field - pixels that influence the neuron)
++ fully connected layer: maps the feature vector into the final prediction - a vector of probabilities
+
+CNN architecture contains feature extraction and a classifier. Learning means that we learn feature extraction and a classifier. CNNs became popular due to huge labelled datasets. Their speed is inversely proportional with the number of parameters and their accuracy is related to the network complexity.
+
+So far, we considered classifying the entire image, but many applications require more fine-grained classification - assigning a class label to each pixel. For that we use **semantic segmentation**. We apply CNNs to encode each pixel.
+
+**Box regression** is where region proposal generates approximate bounding box and the box regressor defines it. 
+
+**RCNN** is a region based CNN. The slow version is consisted of region proposal, feature extraction, classification and bounding box regression. It is slow because each of the region proposals is processed independently by the CNN. We can improve it by sharing computations. **Fast RCNN** is consisted of feature extraction, region proposal which generates candidate regions ROIs, ROI pooling, classification and boundin box regression. The problem with fast RCNN is that region proposals have very poor recall and can be slow. We fix this with **faster RCNN**, which consists of feature extraction, region proposal network RPN, ROI pooling, classification and bounding box regression. RPN is a small neural network that slides over the feature map and predicts region proposals and objectness scores. It uses anchor boxes to generate proposals. We can extend faster RCNN with **mask RCNN**, which adds a brach for predicting segmentation masks on each ROI, which allows the network to perform both object detection and instance segmentation at the same time.
+
